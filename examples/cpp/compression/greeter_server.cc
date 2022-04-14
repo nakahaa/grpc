@@ -54,7 +54,7 @@ void RunServer() {
 
   ServerBuilder builder;
   // Set the default compression algorithm for the server.
-  builder.SetDefaultCompressionAlgorithm(GRPC_COMPRESS_GZIP);
+  builder.SetDefaultCompressionAlgorithm(GRPC_COMPRESS_LZ4);
   // Listen on the given address without any authentication mechanism.
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
   // Register "service" as the instance through which we'll communicate with

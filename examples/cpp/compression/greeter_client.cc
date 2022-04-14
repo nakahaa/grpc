@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
   // (use of InsecureChannelCredentials()).
   ChannelArguments args;
   // Set the default compression algorithm for the channel.
-  args.SetCompressionAlgorithm(GRPC_COMPRESS_GZIP);
+  args.SetCompressionAlgorithm(GRPC_COMPRESS_LZ4);
   GreeterClient greeter(grpc::CreateCustomChannel(
       "localhost:50051", grpc::InsecureChannelCredentials(), args));
   std::string user("world world world world");
