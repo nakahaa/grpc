@@ -21,11 +21,20 @@
 #include "src/core/lib/compression/message_compress.h"
 
 #include <string.h>
-
-#include <zlib.h>
-
+#include <stdio.h>
+// #include <zlib.h>
+#include <lz4.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <zlib.h>
+#ifdef __cplusplus
+}
+#endif
 
 #include "src/core/lib/slice/slice_internal.h"
 
@@ -140,6 +149,64 @@ static int zlib_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output,
   return r;
 }
 
+static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
+                         int gzip) {
+  size_t i;
+  char buffer[ OUTPUT_BLOCK_SIZE * 16 ];
+  const uInt uint_max = ~static_cast<uInt>(0);
+  
+  LZ4_stream_t lz4Stream_body;
+  LZ4_stream_t* lz4Stream = &lz4Stream_body;
+
+  for ( i = 0; i < input->count; i++ ) {
+
+    GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
+    uint32_t inputSz = GRPC_SLICE_LENGTH( input->slices[i] );
+
+    const char* inpPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[i] );
+    const int cmpBytes = LZ4_compress_fast_continue(
+      lz4Stream, inpPtr, buffer, inputSz, sizeof(buffer), 1);
+
+
+    grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
+    char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
+    strncpy(outBufferPtr, buffer, cmpBytes);
+
+    grpc_slice_buffer_add_indexed(output, outbuf);
+  }
+
+  return 0;
+}
+
+static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output,
+                           int gzip) {
+  size_t i;
+  char buffer[ OUTPUT_BLOCK_SIZE * 16 ];
+  const uInt uint_max = ~static_cast<uInt>(0);
+  
+  LZ4_streamDecode_t lz4StreamDecode_body;
+  LZ4_streamDecode_t* lz4StreamDecode = &lz4StreamDecode_body;
+
+  for ( i = 0; i < input->count; i++ ) {
+    
+    GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
+    uint32_t inputSz = GRPC_SLICE_LENGTH( input->slices[i] );
+
+    const char* inpPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[i] );
+    const int cmpBytes = LZ4_decompress_safe_continue(
+      lz4StreamDecode, inpPtr, buffer, inputSz, sizeof(buffer));
+
+
+    grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
+    char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
+    strncpy(outBufferPtr, buffer, cmpBytes);
+
+    grpc_slice_buffer_add_indexed(output, outbuf);
+  }
+
+  return 0;
+}
+
 static int copy(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   size_t i;
   for (i = 0; i < input->count; i++) {
@@ -159,6 +226,8 @@ static int compress_inner(grpc_compression_algorithm algorithm,
       return zlib_compress(input, output, 0);
     case GRPC_COMPRESS_GZIP:
       return zlib_compress(input, output, 1);
+    case GRPC_COMPRESS_LZ4:
+      return lz4_compress(input, output, 1);
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       break;
   }
@@ -184,6 +253,8 @@ int grpc_msg_decompress(grpc_compression_algorithm algorithm,
       return zlib_decompress(input, output, 0);
     case GRPC_COMPRESS_GZIP:
       return zlib_decompress(input, output, 1);
+    case GRPC_COMPRESS_LZ4:
+      return lz4_decompress(input, output, 1);
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       break;
   }
