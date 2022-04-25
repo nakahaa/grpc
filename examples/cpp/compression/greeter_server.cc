@@ -41,7 +41,7 @@ class GreeterServiceImpl final : public Greeter::Service {
   Status SayHello(ServerContext* context, const HelloRequest* request,
                   HelloReply* reply) override {
     // Overwrite the call's compression algorithm to DEFLATE.
-    context->set_compression_algorithm(GRPC_COMPRESS_DEFLATE);
+    context->set_compression_algorithm(GRPC_COMPRESS_LZ4);
     std::string prefix("Hello ");
     reply->set_message(prefix + request->name());
     return Status::OK;

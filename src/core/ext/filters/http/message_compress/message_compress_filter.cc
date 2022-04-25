@@ -188,9 +188,11 @@ void CallData::ProcessSendInitialMetadata(
       initial_metadata->Set(grpc_core::GrpcEncodingMetadata(),
                             compression_algorithm_);
       break;
-    // case GRPC_COMPRESS_LZ4:
-    //   //TODO: implement lz4 here
-    //   break;
+    case GRPC_COMPRESS_LZ4:
+      InitializeState(elem);
+      initial_metadata->Set(grpc_core::GrpcEncodingMetadata(),
+                            compression_algorithm_);
+      break;
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       abort();
   }

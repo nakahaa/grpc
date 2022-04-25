@@ -56,7 +56,7 @@ class GreeterClient {
     ClientContext context;
 
     // Overwrite the call's compression algorithm to DEFLATE.
-    context.set_compression_algorithm(GRPC_COMPRESS_DEFLATE);
+    context.set_compression_algorithm(GRPC_COMPRESS_LZ4);
 
     // The actual RPC.
     Status status = stub_->SayHello(&context, request, &reply);
