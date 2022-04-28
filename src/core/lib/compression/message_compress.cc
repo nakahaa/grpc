@@ -153,41 +153,6 @@ static const LZ4F_preferences_t kPrefs = {
     {0, 0, 0},
 };
 
-// std::tuple<int, int> read_grpc_slice_buffer(grpc_slice_buffer* input, void*
-// buffer, size_t bufferSz, size_t offset) {
-//   if( input == NULL){
-//     return std::tuple<int, int>{-1, -1};
-//   }
-
-//   if( offset >= input->length) {
-//     return std::tuple<int, int>{0, 0};
-//   }
-
-//   //find first block
-//   size_t visitedSliceSize = 0;
-//   size_t inputIndex = 0;
-//   for(int i = 0 ; i < input->count; i++) {
-//     if( visitedSliceSize + GRPC_SLICE_LENGTH( input->slices[i] ) > offset ) {
-//       inputIndex = i;
-//       break;
-//     } else {
-//       visitedSliceSize = visitedSliceSize + GRPC_SLICE_LENGTH(
-//       input->slices[i] );
-//     }
-//   }
-
-//   auto startIndex = offset - visitedSliceSize;
-//   // 处理表头
-//   if( startIndex + bufferSz <= GRPC_SLICE_LENGTH( input->slices[inputIndex] )
-//   ) {
-
-//   }
-
-//   // size_t readedSize = 0;
-//   // while( readedSize < bufferSz ) {
-//   //   strncpy((char*) buffer, buffer, cmpBytes);
-//   // }
-// }
 
 static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4F_compressionContext_t ctx;
@@ -229,19 +194,24 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
            (unsigned)outCapacity, (unsigned)headerSize);
 
     grpc_slice outbuf = GRPC_SLICE_MALLOC(headerSize);
+    // printf("malloc head buffers\n");
     char* headerBufferPtr =
         reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
+    // printf("copy head buffers\n");
     strncpy(headerBufferPtr, headerBuff, headerSize);
     grpc_slice_buffer_add_indexed(output, outbuf);
+    // printf("free head buffers\n");
     free(headerBuff);
   }
 
+  // printf("process bodys\n");
+
   size_t processedBytes = 0;
-  void* const outBuff = malloc(IN_CHUNK_SIZE);
+  void* outBuff = malloc(IN_CHUNK_SIZE);
   while (processedBytes < input->length) {
     size_t compressedSize;
     if (processedBytes + IN_CHUNK_SIZE > input->length) {
-      size_t const compressedSize = LZ4F_compressUpdate(
+      compressedSize = LZ4F_compressUpdate(
           ctx, outBuff, outCapacity, srcBuffer + processedBytes,
           input->length - processedBytes, NULL);
       processedBytes = input->length;
@@ -260,6 +230,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
       return -1;
     }
 
+    // printf("malloc %u bytes \n", (unsigned)compressedSize);
     grpc_slice outbuf = GRPC_SLICE_MALLOC(compressedSize);
     char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
     strncpy(outBufferPtr, srcBuffer + processedBytes, compressedSize);
