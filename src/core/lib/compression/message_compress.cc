@@ -283,6 +283,8 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   size_t const ctxCreation = LZ4F_createCompressionContext(&ctx, LZ4F_VERSION);
   size_t const outCapacity = LZ4F_compressBound(IN_CHUNK_SIZE, &kPrefs);
 
+  printf("decompress begin\n");
+  
   char* srcBuffer = reinterpret_cast<char*>(malloc(input->length));
   if (!srcBuffer) {
     printf("decompress_file(src)");
@@ -347,17 +349,28 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     return 1;
   }
 
+  
+  printf("total size: %u, header size: %u \n", input->length, srcCapacity);
   size_t ret = 1;
   int firstChunk = 1;
   int comsumedSize = srcCapacity;
   while (comsumedSize < input->length ) {
-    const void* srcStart = (const char*)srcBuffer + comsumedSize;    
-    const void* const srcEnd = (const char*)srcBuffer + comsumedSize + srcCapacity; 
-    while (srcStart < srcEnd && ret != 0) {
+    const void* srcStart = (const char*)srcBuffer + comsumedSize;
+    const void* srcEnd;
+    if ( (const char*)srcBuffer + comsumedSize + srcCapacity > (const char*)srcBuffer +  input->length ) {
+        srcEnd = (const char*)srcBuffer +  input->length;
+    } else {
+        srcEnd = (const char*)srcBuffer + comsumedSize + srcCapacity; 
+    }
+
+    // while (srcStart < srcEnd && ret != 0) {
+    while (srcStart < srcEnd ) {
       size_t dstSize = dstCapacity;
       size_t srcSize = (const char*)srcEnd - (const char*)srcStart;
+      printf("before dst size： %u, srcSize: %u \n",  dstSize, srcSize);
       ret = LZ4F_decompress(dctx, dst, &dstSize, srcStart, &srcSize, NULL);
 
+      printf("after dst size： %u, srcSize: %u \n", dstSize, srcSize);
       if (LZ4F_isError(ret)) {
         printf("Decompression error: %s\n", LZ4F_getErrorName(ret));
         return 1;
@@ -367,6 +380,8 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
         
         grpc_slice outbuf = GRPC_SLICE_MALLOC(dstSize);
         char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
+        printf("continue to decompress %u\n", dstSize);
+
         strncpy(outBufferPtr, (char*) srcStart, dstSize);
 
         grpc_slice_buffer_add_indexed(output, outbuf);
