@@ -205,8 +205,8 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                (unsigned)outCapacity, (unsigned)headerSize);
 
         grpc_slice header = GRPC_SLICE_MALLOC(headerSize);
-        char* headerBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(header);
-        strncpy(headerBufferPtr, reinterpret_cast<char*> (outBuff), headerSize);
+        void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
+        memcpy(outBufferPtr,  outBuff , headerSize);
         grpc_slice_buffer_add_indexed(output, header);
     }
 
@@ -236,11 +236,10 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         }
 
         printf("Writing stream %u bytes\n", (unsigned)compressedSize);
-        // safe_fwrite(outBuff, 1, compressedSize, f_out);
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
-        char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(tmpOutbuf);
-        strncpy(outBufferPtr,  reinterpret_cast<char*> (outBuff), compressedSize);
+        void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
+        memcpy(outBufferPtr,  outBuff , compressedSize);
         grpc_slice_buffer_add_indexed(output, tmpOutbuf);
 
         count_out += compressedSize;
@@ -261,8 +260,8 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         // safe_fwrite(outBuff, 1, compressedSize, f_out);
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
-        char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(tmpOutbuf);
-        strncpy(outBufferPtr,  reinterpret_cast<char*> (outBuff) , compressedSize);
+        void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
+        memcpy(outBufferPtr,  outBuff , compressedSize);
 
         grpc_slice_buffer_add_indexed(output, tmpOutbuf);
         
@@ -292,8 +291,6 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   void *const outbuff = malloc(outbufCapacity);
   if (!LZ4F_isError(ctxCreation) && src && outbuff)
   { 
-      std::cout << "max outCapacity = " << outbufCapacity << std::endl;
-      
       auto result = compress_slice_internal(input, output, ctx, outbuff, outbufCapacity);
   }
   else
