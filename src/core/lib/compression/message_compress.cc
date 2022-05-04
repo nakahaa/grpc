@@ -185,6 +185,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 {
     compressResult_t result = {1, 0, 0};
     unsigned long long count_in = 0, count_out;
+    const uInt uint_max = ~static_cast<uInt>(0);
 
     assert(input != NULL);
     assert(output != NULL);
@@ -204,9 +205,8 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                (unsigned)outCapacity, (unsigned)headerSize);
         // safe_fwrite(outBuff, 1, headerSize, f_out);
         grpc_slice header = GRPC_SLICE_MALLOC(headerSize);
-        char* headerBufferPtr =
-            reinterpret_cast<char*> GRPC_SLICE_START_PTR(header);
-        strncpy(headerBufferPtr, reinterpret_cast<char*> outBuff, headerSize);
+        char* headerBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(header);
+        strncpy(headerBufferPtr, reinterpret_cast<char*> (outBuff), headerSize);
         grpc_slice_buffer_add_indexed(output, header);
         // free(headerBuff);
     }
@@ -259,7 +259,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
         char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(tmpOutbuf);
-        strncpy(outBufferPtr,  reinterpret_cast<char*> outBuff , compressedSize);
+        strncpy(outBufferPtr,  reinterpret_cast<char*> (outBuff) , compressedSize);
 
         grpc_slice_buffer_add_indexed(output, tmpOutbuf);
         
@@ -287,7 +287,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   void *const outbuff = malloc(outbufCapacity);
   if (!LZ4F_isError(ctxCreation) && src && outbuff)
   {
-      result = compress_slice_internal(input, output, ctx, outbuff, outbufCapacity);
+      auto result = compress_slice_internal(input, output, ctx, outbuff, outbufCapacity);
   }
   else
   {
@@ -311,8 +311,6 @@ decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     int firstChunk = 1;
     size_t ret = 1;
 
-    assert(f_in != NULL);
-    assert(f_out != NULL);
     assert(dctx != NULL);
     assert(src != NULL);
     assert(srcCapacity > 0);
@@ -334,7 +332,7 @@ decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
       grpc_slice outbuf = GRPC_SLICE_MALLOC(ret);
       char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
-      strncpy(outBufferPtr, dst, dstCapacity);
+      strncpy(outBufferPtr, reinterpret_cast<char*> (dst), dstCapacity);
 
       grpc_slice_buffer_add_indexed(output, outbuf);
     }
