@@ -305,14 +305,14 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   // }
 
   // std::cout << "write lz4 after compressed buffer " << std::endl;
-  FILE* const outFp = fopen("test", "wb");
-  for (size_t i = 0; i < output->count; i++) {
-    // std::cout << "write bytes: " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
-    void* headerBufferPtr = GRPC_SLICE_START_PTR( output->slices[i] );
-    fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
-  }
+  // FILE* const outFp = fopen("test", "wb");
+  // for (size_t i = 0; i < output->count; i++) {
+  //   // std::cout << "write bytes: " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
+  //   void* headerBufferPtr = GRPC_SLICE_START_PTR( output->slices[i] );
+  //   fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
+  // }
 
-  fclose(outFp);  
+  // fclose(outFp);  
 
   free(src);
   free(outbuff);
@@ -355,7 +355,7 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
       //   break;
       // }; 
 
-      std::cout << "decompress bytes: " << dstCapacity << std::endl;
+      // std::cout << "decompress bytes: " << dstCapacity << std::endl;
       grpc_slice outbuf = GRPC_SLICE_MALLOC(dstCapacity);
       void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
       memcpy(outBufferPtr, dst, dstCapacity);
@@ -364,13 +364,13 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
     }
 
-    FILE* const outFp = fopen("lz4_out_decompress", "wb");
-    for (size_t i = 0; i < output->count; i++) {
-      void* headerBufferPtr = GRPC_SLICE_START_PTR( output->slices[i] );
-      fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
-    }
+    // FILE* const outFp = fopen("lz4_out_decompress", "wb");
+    // for (size_t i = 0; i < output->count; i++) {
+    //   void* headerBufferPtr = GRPC_SLICE_START_PTR( output->slices[i] );
+    //   fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
+    // }
 
-    fclose(outFp);  
+    // fclose(outFp);  
 
     return 0;
 }
@@ -405,12 +405,12 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
         }
     }
 
-    for (size_t i = 0; i < input->count; i++) {
-      std::cout<< "inited slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
-    }
+    // for (size_t i = 0; i < input->count; i++) {
+    //   std::cout<< "inited slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
+    // }
 
     size_t const dstCapacity = get_block_size(&info);
-    std::cout << "dstCapacity = " << dstCapacity << std::endl;
+    // std::cout << "dstCapacity = " << dstCapacity << std::endl;
     void *const dst = malloc(dstCapacity);
     if (!dst)
     {
@@ -430,20 +430,20 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
 
 static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   
-  FILE* const outFp = fopen("lz4_decompress", "wb");
-  for (size_t i = 0; i < input->count; i++) {
-    void* headerBufferPtr = GRPC_SLICE_START_PTR( input->slices[i] );
-    fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( input->slices[i]) , 1, outFp ); 
-  }
+  // FILE* const outFp = fopen("lz4_decompress", "wb");
+  // for (size_t i = 0; i < input->count; i++) {
+  //   void* headerBufferPtr = GRPC_SLICE_START_PTR( input->slices[i] );
+  //   fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( input->slices[i]) , 1, outFp ); 
+  // }
 
-  fclose(outFp);  
+  // fclose(outFp);  
 
   size_t maxBufferSz = 0;
-  std::cout << "before lz4 uncompress slices " << std::endl;
+  // std::cout << "before lz4 uncompress slices " << std::endl;
   for (size_t i = 0; i < input->count; i++) {
     if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
       maxBufferSz = GRPC_SLICE_LENGTH( input->slices[i]);
-      std::cout<< "slice = " << i << "," << "length = " << maxBufferSz << std::endl;
+      // std::cout<< "slice = " << i << "," << "length = " << maxBufferSz << std::endl;
     }
   }
 
@@ -470,11 +470,10 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 
   free(src);
   LZ4F_freeDecompressionContext(dctx);
-  std::cout << "after lz4 uncompress slices " << std::endl;
-  for (size_t i = 0; i < output->count; i++) {
-    std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
-  }
-
+  // std::cout << "after lz4 uncompress slices " << std::endl;
+  // for (size_t i = 0; i < output->count; i++) {
+  //   std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
+  // }
 
   return 1;
 }
