@@ -475,8 +475,8 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
   }
 
-  
-  return 0;
+
+  return 1;
 }
 
 static int copy(grpc_slice_buffer* input, grpc_slice_buffer* output) {
