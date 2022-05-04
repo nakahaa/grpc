@@ -205,7 +205,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         // safe_fwrite(outBuff, 1, headerSize, f_out);
         grpc_slice header = GRPC_SLICE_MALLOC(headerSize);
         char* headerBufferPtr =
-            reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
+            reinterpret_cast<char*> GRPC_SLICE_START_PTR(header);
         strncpy(headerBufferPtr, reinterpret_cast<char*> outBuff, headerSize);
         grpc_slice_buffer_add_indexed(output, header);
         // free(headerBuff);
