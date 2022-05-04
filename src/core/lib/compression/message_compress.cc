@@ -310,7 +310,6 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          void *src, size_t srcCapacity,
                          void *dst, size_t dstCapacity)
 {
-    std::cout<< "decompress internal" << std::endl;
     int firstChunk = 1;
     size_t ret = 1;
 
@@ -321,8 +320,6 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     assert(dstCapacity > 0);
 
     for(size_t i = 0; i < input->count; i++) {
-      std::cout<< "loop decompress internal" << std::endl;
-
       void* inBufferPtr = GRPC_SLICE_START_PTR(input->slices[i]);
       size_t srcSize = GRPC_SLICE_LENGTH(input->slices[i]);
 
