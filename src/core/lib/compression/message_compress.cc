@@ -351,6 +351,7 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
       }
       if( ret == 0) break; 
 
+      std::cout << "decompress bytes: " << dstCapacity << std::endl;
       grpc_slice outbuf = GRPC_SLICE_MALLOC(dstCapacity);
       void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
       memcpy(outBufferPtr, dst, dstCapacity);
