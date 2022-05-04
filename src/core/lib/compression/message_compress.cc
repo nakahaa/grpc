@@ -468,13 +468,14 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 
   int const result = !dctx ? 1: decompress_slice_allocDst(input, output, dctx, src, outbufCapacity);
 
+  free(src);
+  LZ4F_freeDecompressionContext(dctx);
   std::cout << "after lz4 uncompress slices " << std::endl;
   for (size_t i = 0; i < output->count; i++) {
     std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
   }
 
-  free(src);
-  LZ4F_freeDecompressionContext(dctx);
+  
   return 0;
 }
 
