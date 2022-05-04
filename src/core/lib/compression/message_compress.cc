@@ -296,18 +296,18 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     printf("error : resource allocation failed \n");
   }
 
-  FILE* const outFp = fopen("test", "wb");
   maxBufferSz =0;
   std::cout << "after lz4 compress slices " << std::endl;
   for (size_t i = 0; i < output->count; i++) {
     std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
+  }
 
+  std::cout << "write lz4 after compressed buffer " << std::endl;
+  FILE* const outFp = fopen("test", "wb");
+  for (size_t i = 0; i < output->count; i++) {
+    std::cout << "write bytes: " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
     char* headerBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( output->slices[i] );
-    fwrite(headerBufferPtr, maxBufferSz , 1, outFp ); 
-
-    if ( maxBufferSz < GRPC_SLICE_LENGTH( output->slices[i]) ) {
-      maxBufferSz = GRPC_SLICE_LENGTH( output->slices[i]);
-    }
+    fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
   }
 
   fclose(outFp);  
