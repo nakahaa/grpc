@@ -321,7 +321,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 }
 
 
-/* @return : 1==error, 0==success */
+// @return : 1==error, 0==success
 static int
 decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          LZ4F_dctx *dctx,
@@ -350,7 +350,7 @@ decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
       }
       if( ret == 0) break; 
 
-      grpc_slice outbuf = GRPC_SLICE_MALLOC(ret);
+      grpc_slice outbuf = GRPC_SLICE_MALLOC(dstCapacity);
       void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
       memcpy(outBufferPtr, dst, dstCapacity);
 
@@ -394,7 +394,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     for (size_t i = 0; i < input->count; i++) {
       std::cout<< "inited slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
     }
-    
+
     size_t const dstCapacity = get_block_size(&info);
     void *const dst = malloc(dstCapacity);
     if (!dst)
