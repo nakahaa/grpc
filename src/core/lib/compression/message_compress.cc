@@ -391,6 +391,10 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
         }
     }
 
+    for (size_t i = 0; i < input->count; i++) {
+      std::cout<< "inited slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
+    }
+    
     size_t const dstCapacity = get_block_size(&info);
     void *const dst = malloc(dstCapacity);
     if (!dst)
@@ -437,9 +441,6 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
       return 1;
   }
 
-  for (size_t i = 0; i < input->count; i++) {
-    std::cout<< "inited slice = " << i << "," << "length = " << maxBufferSz << std::endl;
-  }
 
   LZ4F_dctx *dctx;
   {
