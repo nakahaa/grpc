@@ -256,7 +256,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
             return result;
         }
 
-        printf("Writing ends %u bytes \n", (unsigned)compressedSize);
+        // printf("Writing ends %u bytes \n", (unsigned)compressedSize);
         // safe_fwrite(outBuff, 1, compressedSize, f_out);
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
