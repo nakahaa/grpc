@@ -337,9 +337,9 @@ decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     assert(dst != NULL);
     assert(dstCapacity > 0);
 
-    for(size_t i = 1; i < input->count - 1; i++) {
+    for(size_t i = 0; i < input->count; i++) {
 
-      char* inBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(input->slices[i]);
+      void* inBufferPtr = GRPC_SLICE_START_PTR(input->slices[i]);
       size_t srcSize = GRPC_SLICE_LENGTH(input->slices[i]);
 
       ret = LZ4F_decompress(dctx, dst, &dstCapacity, inBufferPtr, &srcSize, NULL);
@@ -351,61 +351,12 @@ decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
       if( ret == 0) break; 
 
       grpc_slice outbuf = GRPC_SLICE_MALLOC(ret);
-      char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
-      strncpy(outBufferPtr, reinterpret_cast<char*> (dst), dstCapacity);
+      void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+      memcpy(outBufferPtr, dst, dstCapacity);
 
       grpc_slice_buffer_add_indexed(output, outbuf);
+
     }
-
-    // /* Decompression */
-    // while (ret != 0)
-    // {
-    //     size_t readSize = firstChunk ? filled : fread(src, 1, srcCapacity, f_in);
-    //     firstChunk = 0;
-    //     const void *srcPtr = (const char *)src + alreadyConsumed;
-    //     alreadyConsumed = 0;
-    //     const void *const srcEnd = (const char *)srcPtr + readSize;
-    //     if (readSize == 0 || ferror(f_in))
-    //     {
-    //         printf("Decompress: not enough input or error reading file\n");
-    //         return 1;
-    //     }
-
-    //     while (srcPtr < srcEnd && ret != 0)
-    //     {
-    //         /* Any data within dst has been flushed at this stage */
-    //         size_t dstSize = dstCapacity;
-    //         size_t srcSize = (const char *)srcEnd - (const char *)srcPtr;
-    //         ret = LZ4F_decompress(dctx, dst, &dstSize, srcPtr, &srcSize, NULL);
-    //         if (LZ4F_isError(ret))
-    //         {
-    //             printf("Decompression error: %s\n", LZ4F_getErrorName(ret));
-    //             return 1;
-    //         }
-    //         /* Flush output */
-    //         if (dstSize != 0)
-    //             safe_fwrite(dst, 1, dstSize, f_out);
-    //         /* Update input */
-    //         srcPtr = (const char *)srcPtr + srcSize;
-    //     }
-
-    //     assert(srcPtr <= srcEnd);
-
-    //     if (srcPtr < srcEnd)
-    //     {
-    //         printf("Decompress: Trailing data left in file after frame\n");
-    //         return 1;
-    //     }
-    // }
-
-    // {
-    //     size_t const readSize = fread(src, 1, 1, f_in);
-    //     if (readSize != 0 || !feof(f_in))
-    //     {
-    //         printf("Decompress: Trailing data left in file after frame\n");
-    //         return 1;
-    //     }
-    // }
 
     return 0;
 }
@@ -420,8 +371,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     assert(srcCapacity >= LZ4F_HEADER_SIZE_MAX); 
 
     // grpc_slice header = GRPC_SLICE_MALLOC(headerSize);
-    char* headerBufferPtr =
-        reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[0] );
+    void* headerBufferPtr = GRPC_SLICE_START_PTR( input->slices[0] );
     
     LZ4F_frameInfo_t info;
     size_t consumedSize = GRPC_SLICE_LENGTH( input->slices[0]);
@@ -431,6 +381,13 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
         {
             printf("LZ4F_getFrameInfo error: %s\n", LZ4F_getErrorName(fires));
             return 1;
+        }
+        if (consumedSize < GRPC_SLICE_LENGTH( input->slices[0]) ) {
+          void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
+          memmove(outBufferPtr, outBufferPtr, GRPC_SLICE_LENGTH( input->slices[0] ) - consumedSize);
+          GRPC_SLICE_SET_LENGTH(input->slices[0], GRPC_SLICE_LENGTH( input->slices[0]) - consumedSize );
+          // void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
+          // memcpy(outBufferPtr,  outBuff , compressedSize);
         }
     }
 
