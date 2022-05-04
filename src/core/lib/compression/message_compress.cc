@@ -397,8 +397,6 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
                          LZ4F_dctx *dctx,
                          void *src, size_t srcCapacity)
 {
-    assert(f_in != NULL);
-    assert(f_out != NULL);
     assert(dctx != NULL);
     assert(src != NULL);
     assert(srcCapacity >= LZ4F_HEADER_SIZE_MAX); 
@@ -427,7 +425,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     }
 
     int const decompressionResult = decompress_slice_internal(
-        input, ouput,
+        input, output,
         dctx,
         src, srcCapacity, consumedSize,
         dst, dstCapacity);
