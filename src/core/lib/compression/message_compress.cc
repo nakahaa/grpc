@@ -323,11 +323,12 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 
 // @return : 1==error, 0==success
 static int
-decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
+decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          LZ4F_dctx *dctx,
                          void *src, size_t srcCapacity,
                          void *dst, size_t dstCapacity)
 {
+    std::cout<< "decompress internal" << std::endl;
     int firstChunk = 1;
     size_t ret = 1;
 
@@ -396,6 +397,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     }
 
     size_t const dstCapacity = get_block_size(&info);
+    cout << "dstCapacity = " << dstCapacity << std::endl;
     void *const dst = malloc(dstCapacity);
     if (!dst)
     {
@@ -403,7 +405,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
         return 1;
     }
 
-    int const decompressionResult = decompress_slice_internal(
+    int const decompressionResult = decompress_internal(
         input, output,
         dctx,
         src, srcCapacity,
