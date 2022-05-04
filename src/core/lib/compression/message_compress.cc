@@ -397,7 +397,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     }
 
     size_t const dstCapacity = get_block_size(&info);
-    cout << "dstCapacity = " << dstCapacity << std::endl;
+    std::cout << "dstCapacity = " << dstCapacity << std::endl;
     void *const dst = malloc(dstCapacity);
     if (!dst)
     {
