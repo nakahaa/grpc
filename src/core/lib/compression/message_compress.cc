@@ -192,7 +192,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     assert(ctx != NULL);
     assert(outCapacity >= LZ4F_HEADER_SIZE_MAX);
 
-    /* write frame header */
+    // write frame header 
     {
         size_t const headerSize = LZ4F_compressBegin(ctx, outBuff, outCapacity, &kPrefs);
         if (LZ4F_isError(headerSize))
@@ -203,15 +203,14 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         count_out = headerSize;
         printf("Buffer size is %u bytes, header size %u bytes \n",
                (unsigned)outCapacity, (unsigned)headerSize);
-        // safe_fwrite(outBuff, 1, headerSize, f_out);
+
         grpc_slice header = GRPC_SLICE_MALLOC(headerSize);
         char* headerBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(header);
         strncpy(headerBufferPtr, reinterpret_cast<char*> (outBuff), headerSize);
         grpc_slice_buffer_add_indexed(output, header);
-        // free(headerBuff);
     }
 
-    /* stream file */
+    // stream
     for (size_t i =0 ; i < input->count ; i++)
     {   
         GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
@@ -232,7 +231,11 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
             return result;
         }
 
-        printf("Writing %u bytes\n", (unsigned)compressedSize);
+        if (compressedSize == 0 ){
+          continue;
+        }
+
+        printf("Writing stream %u bytes\n", (unsigned)compressedSize);
         // safe_fwrite(outBuff, 1, compressedSize, f_out);
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
@@ -243,7 +246,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         count_out += compressedSize;
     }
 
-    /* flush whatever remains within internal buffers */
+    // flush whatever remains within internal buffers
     {
         size_t const compressedSize = LZ4F_compressEnd(ctx,
                                                        outBuff, outCapacity,
@@ -254,7 +257,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
             return result;
         }
 
-        printf("Writing %u bytes \n", (unsigned)compressedSize);
+        printf("Writing ends %u bytes \n", (unsigned)compressedSize);
         // safe_fwrite(outBuff, 1, compressedSize, f_out);
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
