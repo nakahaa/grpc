@@ -291,7 +291,9 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   void *const src = malloc(outCapacity);
   void *const outbuff = malloc(outbufCapacity);
   if (!LZ4F_isError(ctxCreation) && src && outbuff)
-  {
+  { 
+      std::cout << "max outCapacity = " << outbufCapacity << std::endl;
+      
       auto result = compress_slice_internal(input, output, ctx, outbuff, outbufCapacity);
   }
   else
