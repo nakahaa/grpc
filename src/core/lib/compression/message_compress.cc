@@ -296,7 +296,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     printf("error : resource allocation failed \n");
   }
 
-  FILE* const inpFp = fopen("testssssss", "rb");
+  FILE* const inpFp = fopen("testssssss", "wb");
 
   std::cout << "after lz4 compress slices " << std::endl;
   for (size_t i = 0; i < output->count; i++) {
