@@ -383,7 +383,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
             return 1;
         }
         if (consumedSize < GRPC_SLICE_LENGTH( input->slices[0]) ) {
-          void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
+          void* outBufferPtr = GRPC_SLICE_START_PTR( input->slices[0]);
           memmove(outBufferPtr, outBufferPtr, GRPC_SLICE_LENGTH( input->slices[0] ) - consumedSize);
           GRPC_SLICE_SET_LENGTH(input->slices[0], GRPC_SLICE_LENGTH( input->slices[0]) - consumedSize );
           // void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
