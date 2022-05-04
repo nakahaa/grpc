@@ -325,7 +325,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 static int
 decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          LZ4F_dctx *dctx,
-                         void *src, size_t srcCapacity, size_t alreadyConsumed,
+                         void *src, size_t srcCapacity,
                          void *dst, size_t dstCapacity)
 {
     int firstChunk = 1;
@@ -361,7 +361,7 @@ decompress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     return 0;
 }
 
-/* @return : 1==error, 0==completed */
+// @return : 1==error, 0==completed
 static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          LZ4F_dctx *dctx,
                          void *src, size_t srcCapacity)
@@ -384,7 +384,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
         }
         if (consumedSize < GRPC_SLICE_LENGTH( input->slices[0]) ) {
           void* outBufferPtr = GRPC_SLICE_START_PTR( input->slices[0]);
-          memmove(outBufferPtr, outBufferPtr, GRPC_SLICE_LENGTH( input->slices[0] ) - consumedSize);
+          memmove(outBufferPtr, outBufferPtr + consumedSize, GRPC_SLICE_LENGTH( input->slices[0] ) - consumedSize);
           GRPC_SLICE_SET_LENGTH(input->slices[0], GRPC_SLICE_LENGTH( input->slices[0]) - consumedSize );
           // void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
           // memcpy(outBufferPtr,  outBuff , compressedSize);
@@ -402,7 +402,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     int const decompressionResult = decompress_slice_internal(
         input, output,
         dctx,
-        src, srcCapacity, consumedSize,
+        src, srcCapacity,
         dst, dstCapacity);
 
     free(dst);
