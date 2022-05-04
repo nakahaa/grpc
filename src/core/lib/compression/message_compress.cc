@@ -237,7 +237,7 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
         char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(tmpOutbuf);
-        strncpy(outBufferPtr,  reinterpret_cast<char*> outBuff, compressedSize);
+        strncpy(outBufferPtr,  reinterpret_cast<char*> (outBuff), compressedSize);
         grpc_slice_buffer_add_indexed(output, tmpOutbuf);
 
         count_out += compressedSize;
