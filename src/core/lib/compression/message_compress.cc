@@ -340,7 +340,7 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
     for(size_t i = 0; i < input->count; i++) {
       std::cout<< "loop decompress internal" << std::endl;
-      
+
       void* inBufferPtr = GRPC_SLICE_START_PTR(input->slices[i]);
       size_t srcSize = GRPC_SLICE_LENGTH(input->slices[i]);
 
@@ -350,7 +350,10 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         printf("Decompression error: %s\n", LZ4F_getErrorName(ret));
         return 1;
       }
-      if( ret == 0) break; 
+      // if( ret == 0) 
+      // {
+      //   break;
+      // }; 
 
       std::cout << "decompress bytes: " << dstCapacity << std::endl;
       grpc_slice outbuf = GRPC_SLICE_MALLOC(dstCapacity);
