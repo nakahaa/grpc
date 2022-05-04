@@ -437,6 +437,10 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
       return 1;
   }
 
+  for (size_t i = 0; i < input->count; i++) {
+    std::cout<< "inited slice = " << i << "," << "length = " << maxBufferSz << std::endl;
+  }
+
   LZ4F_dctx *dctx;
   {
     size_t const dctxStatus = LZ4F_createDecompressionContext(&dctx, LZ4F_VERSION);
