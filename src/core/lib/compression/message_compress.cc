@@ -24,7 +24,7 @@
 #include <lz4frame.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <iostream>
 #include <zlib.h>
 
 #include <grpc/support/alloc.h>
@@ -279,6 +279,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   for (size_t i = 0; i < input->count; i++) {
     if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
       maxBufferSz = GRPC_SLICE_LENGTH( input->slices[i]);
+      std::cout<< "slice = " << i << "," << "length = " << maxBufferSz << std::endl;
     }
   }
   size_t const outbufCapacity = LZ4F_compressBound(maxBufferSz, &kPrefs);
@@ -438,6 +439,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   for (size_t i = 0; i < input->count; i++) {
     if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
       maxBufferSz = GRPC_SLICE_LENGTH( input->slices[i]);
+      std::cout<< "slice = " << i << "," << "length = " << maxBufferSz << std::endl;
     }
   }
 
