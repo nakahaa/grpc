@@ -276,6 +276,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4F_compressionContext_t ctx;
   size_t const ctxCreation = LZ4F_createCompressionContext(&ctx, LZ4F_VERSION);
   size_t maxBufferSz = 0;
+  std::cout << "before lz4 compress slices " << std::endl;
   for (size_t i = 0; i < input->count; i++) {
     std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
     if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
@@ -444,6 +445,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
 static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   
   size_t maxBufferSz = 0;
+  std::cout << "before lz4 uncompress slices " << std::endl;
   for (size_t i = 0; i < input->count; i++) {
     if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
       maxBufferSz = GRPC_SLICE_LENGTH( input->slices[i]);
@@ -470,6 +472,11 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   }
 
   int const result = !dctx ? 1: decompress_slice_allocDst(input, output, dctx, src, outbufCapacity);
+
+  std::cout << "after lz4 uncompress slices " << std::endl;
+  for (size_t i = 0; i < output->count; i++) {
+    std::cout<< "slice = " << i << "," << "length = " << GRPC_SLICE_LENGTH( output->slices[i]) << std::endl;
+  }
 
   free(src);
   LZ4F_freeDecompressionContext(dctx);
