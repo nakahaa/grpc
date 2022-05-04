@@ -364,6 +364,14 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
     }
 
+    FILE* const outFp = fopen("lz4_out_decompress", "wb");
+    for (size_t i = 0; i < output->count; i++) {
+      void* headerBufferPtr = GRPC_SLICE_START_PTR( output->slices[i] );
+      fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
+    }
+
+    fclose(outFp);  
+
     return 0;
 }
 
