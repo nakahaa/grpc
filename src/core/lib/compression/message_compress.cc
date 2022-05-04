@@ -412,9 +412,9 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
 static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   
   FILE* const outFp = fopen("lz4_decompress", "wb");
-  for (size_t i = 0; i < output->count; i++) {
-    void* headerBufferPtr = GRPC_SLICE_START_PTR( output->slices[i] );
-    fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( output->slices[i]) , 1, outFp ); 
+  for (size_t i = 0; i < input->count; i++) {
+    void* headerBufferPtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    fwrite(headerBufferPtr, GRPC_SLICE_LENGTH( input->slices[i]) , 1, outFp ); 
   }
 
   fclose(outFp);  
