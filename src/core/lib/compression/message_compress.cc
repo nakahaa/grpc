@@ -430,7 +430,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4_stream_t lz4Stream_body;
   LZ4_stream_t* lz4Stream = &lz4Stream_body;
   uint32_t in = 0, out = 0;
-  // LZ4_initStream(lz4Stream, sizeof (*lz4Stream));
+  LZ4_resetStream(lz4Stream);
   for ( i = 0; i < input->count; i++ ) {
 
     GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
@@ -460,7 +460,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4_streamDecode_t lz4StreamDecode_body;
   LZ4_streamDecode_t* lz4StreamDecode = &lz4StreamDecode_body;
 
-  // LZ4_setStreamDecode(lz4StreamDecode, NULL, 0);
+  LZ4_setStreamDecode(lz4StreamDecode, NULL, 0);
 
   for ( i = 0; i < input->count; i++ ) {
 
