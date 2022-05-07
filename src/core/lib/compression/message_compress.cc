@@ -415,7 +415,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 
   int const result = !dctx ? 1: decompress_slice_allocDst(input, output, dctx, src, outbufCapacity);
 
-  printf("Stream UnCompress: in %d, out %d\n", count_in, count_out);
+  // printf("Stream UnCompress: in %d, out %d\n", count_in, count_out);
   free(src);
   LZ4F_freeDecompressionContext(dctx);
 
