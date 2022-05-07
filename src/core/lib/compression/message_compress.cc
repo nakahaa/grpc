@@ -422,8 +422,7 @@ typedef struct
 //   return 1;
 // }
 
-static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
-                         int gzip) {
+static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   size_t i;
   char buffer[ OUTPUT_BLOCK_SIZE * 16 ];
   const uInt uint_max = ~static_cast<uInt>(0);
@@ -451,8 +450,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
   return 0;
 }
 
-static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output,
-                           int gzip) {
+static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   size_t i;
   char buffer[ OUTPUT_BLOCK_SIZE * 16 ];
   const uInt uint_max = ~static_cast<uInt>(0);
