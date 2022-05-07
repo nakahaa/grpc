@@ -430,6 +430,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4_stream_t lz4Stream_body;
   LZ4_stream_t* lz4Stream = &lz4Stream_body;
 
+  LZ4_initStream(lz4Stream, sizeof (*lz4Stream));
   for ( i = 0; i < input->count; i++ ) {
 
     GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
@@ -441,8 +442,8 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 
 
     grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
-    char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
-    strncpy(outBufferPtr, buffer, cmpBytes);
+    void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+    memcpy(outBufferPtr, buffer, cmpBytes);
 
     grpc_slice_buffer_add_indexed(output, outbuf);
   }
@@ -458,6 +459,8 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4_streamDecode_t lz4StreamDecode_body;
   LZ4_streamDecode_t* lz4StreamDecode = &lz4StreamDecode_body;
 
+  LZ4_setStreamDecode(lz4StreamDecode, NULL, 0);
+
   for ( i = 0; i < input->count; i++ ) {
 
     GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
@@ -468,8 +471,8 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
       lz4StreamDecode, inpPtr, buffer, inputSz, sizeof(buffer));
 
     grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
-    char* outBufferPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR(outbuf);
-    strncpy(outBufferPtr, buffer, cmpBytes);
+    void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+    memcpy(outBufferPtr, buffer, cmpBytes);
 
     grpc_slice_buffer_add_indexed(output, outbuf);
   }
