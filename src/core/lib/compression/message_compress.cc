@@ -490,7 +490,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   }
 
   std::cout<< "LZ4 Compress: in " << in << "," << "out " << out << std::endl;
-  return 0;
+  return 1;
 }
 
 static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
