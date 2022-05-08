@@ -543,7 +543,7 @@ static int compress_inner(grpc_compression_algorithm algorithm,
     case GRPC_COMPRESS_GZIP:
       return zlib_compress(input, output, 1);
     case GRPC_COMPRESS_LZ4:
-      if ( input->length > 1024 )
+      if ( input->length > 2048 )
         return lz4_compress(input, output);
       else
         return 0;
