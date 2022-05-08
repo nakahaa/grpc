@@ -298,7 +298,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   free(src);
   free(outbuff);
   LZ4F_freeCompressionContext(ctx);
-  return 0;
+  return 1;
 }
 
 
@@ -400,7 +400,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   if (!src)
   {
       perror("decompress_file(src)");
-      return 1;
+      return 0;
   }
 
 
