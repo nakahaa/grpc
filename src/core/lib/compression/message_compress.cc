@@ -297,7 +297,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4F_freeCompressionContext(ctx);
   // std::cout << "compress done" << std::endl;
   
-  if(resultCode = 0) {
+  if(resultCode == 0) {
     for (auto i = 0; i < output->count; i++) {
       grpc_slice_unref_internal(output->slices[i]);
     }
@@ -442,6 +442,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
       grpc_slice_unref_internal(output->slices[i]);
     }
   }
+  printf("Stream Uncompressed: in %d, out %d \n", input->length, output->length);
 
   return result;
 }
