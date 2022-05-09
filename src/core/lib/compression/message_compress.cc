@@ -457,7 +457,9 @@ static int compress_inner(grpc_compression_algorithm algorithm,
     case GRPC_COMPRESS_GZIP:
       return zlib_compress(input, output, 1);
     case GRPC_COMPRESS_LZ4:
-      return lz4_compress(input, output);
+      if (input->length > 4096)
+        return lz4_compress(input, output);
+      else return 0;
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       break;
   }
