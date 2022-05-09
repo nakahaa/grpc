@@ -280,15 +280,11 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     }
   }
   size_t const outbufCapacity = LZ4F_compressBound(maxBufferSz, &kPrefs);
-  size_t const outCapacity = LZ4F_compressBound(maxBufferSz, &kPrefs);
-  void *const src = malloc(outCapacity);
   void *const outbuff = malloc(outbufCapacity);
-  if (!LZ4F_isError(ctxCreation) && src && outbuff)
+  if (!LZ4F_isError(ctxCreation) && outbuff)
   { 
       auto result = compress_slice_internal(input, output, ctx, outbuff, outbufCapacity);
-      if (result.error == 1) {
-        resultCode = 0;
-      }
+      resultCode = result.error;
   }
   else
   {
@@ -297,7 +293,6 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   }
 
 
-  free(src);
   free(outbuff);
   LZ4F_freeCompressionContext(ctx);
   // std::cout << "compress done" << std::endl;
@@ -312,15 +307,14 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 }
 
 
-// @return : 1==error, 0==success
+// @return : 0==error, 1==success
 static int
 decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          LZ4F_dctx *dctx,
                          void *src, size_t srcCapacity,
                          void *dst, size_t dstCapacity)
 {
-    int firstChunk = 1;
-    size_t ret = 1;
+    size_t ret;
 
     // std::cout<< "decompress all size: " << input->length << std::endl;
     // for(size_t i=0; i<input->count; i++) {
@@ -328,10 +322,10 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     // }
 
     for(size_t i = 0; i < input->count; i++) {
+      ret = 1;
       void* inBufferPtr = GRPC_SLICE_START_PTR(input->slices[i]);
       size_t srcSize = GRPC_SLICE_LENGTH(input->slices[i]);
       void* endBufferPtr = inBufferPtr + srcSize;
-      ret = 1;
       while( inBufferPtr < endBufferPtr && ret != 0) {
         size_t srcSize = (const char *)endBufferPtr - (const char *)inBufferPtr;
         ret = LZ4F_decompress(dctx, dst, &dstCapacity, inBufferPtr, &srcSize, NULL);
@@ -354,7 +348,7 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
     return 1;
 }
 
-// @return : 1==error, 0==completed
+// @return : 0==error, 1==completed
 static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          LZ4F_dctx *dctx,
                          void *src, size_t srcCapacity)
@@ -377,7 +371,7 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
         if (LZ4F_isError(fires))
         {
             printf("LZ4F_getFrameInfo error: %s\n", LZ4F_getErrorName(fires));
-            return 1;
+            return 0;
         }
         if (consumedSize < GRPC_SLICE_LENGTH( input->slices[0]) ) {
           void* outBufferPtr = GRPC_SLICE_START_PTR( input->slices[0]);
@@ -391,9 +385,9 @@ static int decompress_slice_allocDst(grpc_slice_buffer* input, grpc_slice_buffer
     void *const dst = malloc(dstCapacity);
     if (!dst)
     {
-        free(dst);
+        // free(dst);
         printf("decompress_file(dst)\n");
-        return 1;
+        return 0;
     }
     // printf("block size: %d\n", dstCapacity);
     int const decompressionResult = decompress_internal(
@@ -433,6 +427,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     if (LZ4F_isError(dctxStatus))
     {
       printf("LZ4F_dctx creation error: %s\n", LZ4F_getErrorName(dctxStatus));
+      free(src);
       return 0;
     }
   }
