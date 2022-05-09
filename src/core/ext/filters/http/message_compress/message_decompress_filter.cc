@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <iostream>
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
