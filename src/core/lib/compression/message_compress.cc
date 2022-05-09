@@ -185,6 +185,11 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   char sourceBuffer[ bufferSZ ];
   const uInt uint_max = ~static_cast<uInt>(0);
 
+  for (size_t i = 0; i < input->count; i++) {
+    std::cout << "lz4_compress input slice " << i << " length : "<< GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
+  }
+
+
   LZ4_stream_t lz4Stream_body;
   LZ4_stream_t* lz4Stream = &lz4Stream_body;
   uint32_t in = 0, out = 0;
@@ -197,7 +202,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     in += GRPC_SLICE_LENGTH(input->slices[i]);
     const char* inpPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[i] );
     const int cmpBytes = LZ4_compress_fast_continue(
-        lz4Stream, inpPtr, buffer, inputSz, sizeof(buffer), 1);
+        lz4Stream, inpPtr, buffer, inputSz, bufferSZ, 1);
 
     out += cmpBytes;
     grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
@@ -211,32 +216,72 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 }
 
 static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
-  size_t i;
-  size_t bufferSZ = OUTPUT_BLOCK_SIZE * 128;
-  char buffer[ bufferSZ ];
+  size_t inputBufferSz = 0;
+  for (size_t i = 0; i < input->count; i++) {
+    std::cout << "lz4_decompress input slice " << i << " length : "<< GRPC_SLICE_LENGTH( input->slices[i]) << std::endl;
+    // if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
+    //   maxBufferSz = GRPC_SLICE_LENGTH( input->slices[i]);
+    // }
+    inputBufferSz +=  GRPC_SLICE_LENGTH( input->slices[i]);
+  }
+
+  size_t bufferSZ = LZ4_COMPRESSBOUND(inputBufferSz);
+  void* inputBuffer = malloc(bufferSZ);
+  void* outputBuffer = malloc(bufferSZ);
   const uInt uint_max = ~static_cast<uInt>(0);
+
+  size_t copyiedSize = 0;
+  for(size_t i = 0; i < input->count; i++) {
+    void* inpPtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy(inputBuffer + copyiedSize, inpPtr, GRPC_SLICE_LENGTH( input->slices[i]));
+    copyiedSize += GRPC_SLICE_LENGTH( input->slices[i]);
+  }
 
   LZ4_streamDecode_t lz4StreamDecode_body;
   LZ4_streamDecode_t* lz4StreamDecode = &lz4StreamDecode_body;
 
   LZ4_setStreamDecode(lz4StreamDecode, NULL, 0);
 
-  for ( i = 0; i < input->count; i++ ) {
 
-    GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
-    uint32_t inputSz = GRPC_SLICE_LENGTH( input->slices[i] );
+  const int cmpBytes = LZ4_decompress_safe_continue(
+      lz4StreamDecode, reinterpret_cast<const char*>(inputBuffer), reinterpret_cast<char*>(outputBuffer), inputBufferSz, bufferSZ);
+  
+  if (cmpBytes <= 0) {
+    
+    std::cout<< "find lz4_decompress error: "<< cmpBytes << std::endl;
 
-    const char* inpPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[i] );
-    const int cmpBytes = LZ4_decompress_safe_continue(
-      lz4StreamDecode, inpPtr, buffer, inputSz, bufferSZ);
-
-    grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
-    void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
-    memcpy(outBufferPtr, buffer, cmpBytes);
-
-    grpc_slice_buffer_add_indexed(output, outbuf);
+    free(inputBuffer);
+    free(outputBuffer);
+    return 0;
   }
 
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, outputBuffer, cmpBytes);
+
+  grpc_slice_buffer_add_indexed(output, outbuf);
+
+  // for (size_t i = 0; i < input->count; i++ ) {
+
+  //   GPR_ASSERT(GRPC_SLICE_LENGTH(input->slices[i]) <= uint_max);
+  //   uint32_t inputSz = GRPC_SLICE_LENGTH( input->slices[i] );
+
+  //   // const char* inpPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[i] );
+  //   const char* inpPtr = reinterpret_cast<char*> GRPC_SLICE_START_PTR( input->slices[i] );
+    
+  //   const int cmpBytes = LZ4_decompress_safe_continue(
+  //     lz4StreamDecode, inpPtr, buffer, inputSz, bufferSZ);
+
+  //   grpc_slice outbuf = GRPC_SLICE_MALLOC(cmpBytes);
+  //   void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  //   memcpy(outBufferPtr, buffer, cmpBytes);
+
+  //   grpc_slice_buffer_add_indexed(output, outbuf);
+  // }
+
+  free(inputBuffer);
+  free(outputBuffer);
+  // LZ4_freeStreamDecode(lz4StreamDecode);
   return 1;
 }
 
@@ -260,10 +305,7 @@ static int compress_inner(grpc_compression_algorithm algorithm,
     case GRPC_COMPRESS_GZIP:
       return zlib_compress(input, output, 1);
     case GRPC_COMPRESS_LZ4:
-      if ( input->length > 2048 )
-        return lz4_compress(input, output);
-      else
-        return 0;
+      return lz4_compress(input, output);
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       break;
   }
