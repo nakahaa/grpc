@@ -377,6 +377,7 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
       size_t srcSize = GRPC_SLICE_LENGTH(input->slices[i]);
       size_t consumedSz = 0;
       
+      // skip l4f frame header
       if ( i == 0 ) {
         inBufferPtr += 7;
         srcSize -= 7;
@@ -384,10 +385,14 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
       void* endBufferPtr = inBufferPtr + srcSize;
       
-      size_t const outbufCapacity = LZ4F_compressBound(srcSize, &kPrefs);
+      size_t const outbufCapacity = LZ4F_compressBound( srcSize , &kPrefs) * 10;
       void *const tempBuff = malloc(outbufCapacity);
+      if( tempBuff == NULL ) { 
+        printf("allocato memory failed\n");
+        return 0;
+      }
 
-      while( inBufferPtr < endBufferPtr && ret != 0) {
+      while( inBufferPtr < endBufferPtr ) {
         size_t srcSize = (const char *)endBufferPtr - (const char *)inBufferPtr;
         size_t dstSize = dstCapacity;
         ret = LZ4F_decompress(dctx, dst, &dstSize, inBufferPtr, &srcSize, NULL);
@@ -398,35 +403,43 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
           return 0;
         }
 
+        memcpy(tempBuff + consumedSz , dst, dstSize);
+        consumedSz += dstSize;
+        inBufferPtr = inBufferPtr + srcSize;
+
+        if( consumedSz > 1024) {
+          grpc_slice outbuf = GRPC_SLICE_MALLOC(consumedSz);
+          printf("inner decompress consumed size: %u bytes\n", (unsigned)consumedSz);
+          void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+          memcpy(outBufferPtr, dst, consumedSz);
+          grpc_slice_buffer_add_indexed(output, outbuf);
+          consumedSz = 0;
+        }
+
         // grpc_slice outbuf = GRPC_SLICE_MALLOC(dstCapacity);
         // printf("Decompression Writing stream %u bytes\n", (unsigned)dstCapacity);
         // void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
         // memcpy(outBufferPtr, dst, dstCapacity);
         // grpc_slice_buffer_add_indexed(output, outbuf);
 
-        memcpy(tempBuff + consumedSz , dst, dstSize);
-        consumedSz += dstSize;
-        // std::cout<< "consumed size: " << dstSize << std::endl;
-        // memcpy(outBufferPtr, src, srcSize);
-        inBufferPtr = inBufferPtr + srcSize;
+        // memcpy(tempBuff + consumedSz , dst, dstSize);
+        // consumedSz += dstSize;
+        // // std::cout<< "consumed size: " << dstSize << std::endl;
+        // // memcpy(outBufferPtr, src, srcSize);
+        // inBufferPtr = inBufferPtr + srcSize;
       }
+
+      std::cout<< "outer decompress consumed size: " << consumedSz << std::endl;
+      std::cout<< "outbufCapacity size: " << outbufCapacity << std::endl;
 
       if( consumedSz == 0 ) {
         free(tempBuff);
         continue;
       }
 
-      std::cout<< "decompress consumed size: " << consumedSz << std::endl;
-
       grpc_slice outbuf = GRPC_SLICE_MALLOC(consumedSz);
       // printf("Decompression Writing stream %u bytes\n", (unsigned)consumedSz);
       void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
-
-      if ( outBufferPtr == NULL ) {
-        std::cout<< "decompress consumed failed: cannt covert ptr" << std::endl;
-        grpc_slice_unref_internal(outbuf);
-        return 0;
-      }
 
       void* res = memcpy(outBufferPtr, tempBuff, consumedSz);
       if ( res == NULL ) {
@@ -475,7 +488,7 @@ static int decompress_slices(grpc_slice_buffer* input, grpc_slice_buffer* output
     }
 
 
-    size_t const dstCapacity = get_block_size(&info);
+    size_t const dstCapacity = 1 << 18;
     void *const dst = malloc(dstCapacity);
     if (!dst)
     {
