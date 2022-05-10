@@ -411,6 +411,11 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         inBufferPtr = inBufferPtr + srcSize;
       }
 
+      if( consumedSz == 0 ) {
+        free(tempBuff);
+        continue;
+      }
+
       std::cout<< "decompress consumed size: " << consumedSz << std::endl;
 
       grpc_slice outbuf = GRPC_SLICE_MALLOC(consumedSz);
