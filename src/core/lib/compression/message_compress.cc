@@ -202,7 +202,15 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
         grpc_slice header = GRPC_SLICE_MALLOC(headerSize);
         void* headerPtr = GRPC_SLICE_START_PTR(header);
-        memcpy(headerPtr,  outBuff , headerSize);
+        if (!headerPtr) {
+          std::cout << "Failed to allocate grpc buffer" << std::endl;
+          return result;
+        }
+        void* out = memcpy(headerPtr,  outBuff , headerSize);
+        if (!out) {
+          std::cout << "Failed to copy header buffer" << std::endl;
+          return result;
+        }
         grpc_slice_buffer_add_indexed(output, header);
     }
 
@@ -217,6 +225,11 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         count_in += readSize;
 
         const void* inBuff = GRPC_SLICE_START_PTR( input->slices[i] );
+        if (!inBuff) {
+          std::cout << "Failed to copy slice buffer" << std::endl;
+          return result;
+        }
+
         size_t const compressedSize = LZ4F_compressUpdate(ctx,
                                                           outBuff, outCapacity,
                                                           inBuff, readSize,
@@ -235,7 +248,16 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
 
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
         void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
-        memcpy(outBufferPtr,  outBuff , compressedSize);
+        if (!outBufferPtr) {
+          std::cout << "Failed to allocate slice buffer" << std::endl;
+          return result;
+        }
+        void* out = memcpy(outBufferPtr,  outBuff , compressedSize);
+        if (!out) {
+          std::cout << "Failed to memcpy slice buffer" << std::endl;
+          return result;
+        }
+
         grpc_slice_buffer_add_indexed(output, tmpOutbuf);
 
         count_out += compressedSize;
@@ -255,7 +277,16 @@ compress_slice_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         // printf("Compress End Writing stream %u bytes\n", (unsigned)compressedSize);
         grpc_slice tmpOutbuf = GRPC_SLICE_MALLOC(compressedSize);
         void* outBufferPtr = GRPC_SLICE_START_PTR(tmpOutbuf);
-        memcpy(outBufferPtr,  outBuff , compressedSize);
+        if (!outBufferPtr) {
+          std::cout << "Failed to allocate slice buffer" << std::endl;
+          return result;
+        }
+
+        void* out = memcpy(outBufferPtr,  outBuff , compressedSize);
+        if (!out) {
+          std::cout << "Failed to memcpy slice buffer" << std::endl;
+          return result;
+        }
 
         grpc_slice_buffer_add_indexed(output, tmpOutbuf);
         
@@ -350,7 +381,7 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         inBufferPtr += 7;
         srcSize -= 7;
       }
-      
+
       void* endBufferPtr = inBufferPtr + srcSize;
       
       size_t const outbufCapacity = LZ4F_compressBound(srcSize, &kPrefs);
@@ -380,11 +411,25 @@ decompress_internal(grpc_slice_buffer* input, grpc_slice_buffer* output,
         inBufferPtr = inBufferPtr + srcSize;
       }
 
+      std::cout<< "decompress consumed size: " << consumedSz << std::endl;
+
       grpc_slice outbuf = GRPC_SLICE_MALLOC(consumedSz);
       // printf("Decompression Writing stream %u bytes\n", (unsigned)consumedSz);
       void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
 
-      memcpy(outBufferPtr, tempBuff, consumedSz);
+      if ( outBufferPtr == NULL ) {
+        std::cout<< "decompress consumed failed: cannt covert ptr" << std::endl;
+        grpc_slice_unref_internal(outbuf);
+        return 0;
+      }
+
+      void* res = memcpy(outBufferPtr, tempBuff, consumedSz);
+      if ( res == NULL ) {
+        std::cout<< "memcpy failed: cannt memcpy to new slice" << std::endl;
+        grpc_slice_unref_internal(outbuf);
+        return 0;
+      }
+
       grpc_slice_buffer_add_indexed(output, outbuf);
       free(tempBuff);
     }
