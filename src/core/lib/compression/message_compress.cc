@@ -276,6 +276,9 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   LZ4F_compressionContext_t ctx;
   size_t const ctxCreation = LZ4F_createCompressionContext(&ctx, LZ4F_VERSION);
   size_t maxBufferSz = 0;
+  size_t count_before = output->count;
+  size_t length_before = output->length;
+
 
   size_t resultCode = 0;
   // std::cout << "compress begin" << std::endl;
@@ -303,9 +306,15 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   // std::cout << "compress done" << std::endl;
   
   if(resultCode == 0) {
-    for (auto i = 0; i < output->count; i++) {
+    for (i = count_before; i < output->count; i++) {
       grpc_slice_unref_internal(output->slices[i]);
     }
+    output->count = count_before;
+    output->length = length_before;
+
+    // for (auto i = 0; i < output->count; i++) {
+    //   grpc_slice_unref_internal(output->slices[i]);
+    // }
   } else {
     std::cout << "compress done, Stream Compressed: in " << input->length << ", out " << output->length << std::endl;
     // printf("Stream Compressed: in %d, out %d \n", count_in, count_out);
@@ -431,6 +440,9 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   
   // std::cout<< "-------------------------------------------------" << std::endl;
   // std::cout<< "begin lz4_decompress" << std::endl;
+  size_t count_before = output->count;
+  size_t length_before = output->length;
+
   size_t maxBufferSz = 0;
   for (size_t i = 0; i < input->count; i++) {
     if ( maxBufferSz < GRPC_SLICE_LENGTH( input->slices[i]) ) {
@@ -465,9 +477,15 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   free(src);
   LZ4F_freeDecompressionContext(dctx);
   if ( result == 0 ) {
-    for (auto i = 0; i < output->count; i++) {
+    for (i = count_before; i < output->count; i++) {
       grpc_slice_unref_internal(output->slices[i]);
     }
+    output->count = count_before;
+    output->length = length_before;
+
+    // for (auto i = 0; i < output->count; i++) {
+    //   grpc_slice_unref_internal(output->slices[i]);
+    // }
 
   } else {
     printf("Stream Uncompressed: in %d, out %d \n", input->length, output->length);
