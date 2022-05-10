@@ -306,7 +306,7 @@ static int lz4_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   // std::cout << "compress done" << std::endl;
   
   if(resultCode == 0) {
-    for (i = count_before; i < output->count; i++) {
+    for (auto i = count_before; i < output->count; i++) {
       grpc_slice_unref_internal(output->slices[i]);
     }
     output->count = count_before;
@@ -477,7 +477,7 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   free(src);
   LZ4F_freeDecompressionContext(dctx);
   if ( result == 0 ) {
-    for (i = count_before; i < output->count; i++) {
+    for (auto i = count_before; i < output->count; i++) {
       grpc_slice_unref_internal(output->slices[i]);
     }
     output->count = count_before;
