@@ -540,7 +540,7 @@ static int snappy_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output
 
   size_t copiedSz = 0;
 
-  for (int i = 0; i < input->length; i++) {
+  for (int i = 0; i < input->count ; i++) {
     void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
     memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
     copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
@@ -568,7 +568,7 @@ static int snappy_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) 
   }
 
   size_t copiedSz = 0;
-  for (int i = 0; i < input->length; i++) {
+  for (int i = 0; i < input->count; i++) {
     void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
     memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
     copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
@@ -603,7 +603,7 @@ static int zstd_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) 
 
   size_t copiedSz = 0;
 
-  for (int i = 0; i < input->length; i++) {
+  for (int i = 0; i < input->count ; i++) {
     void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
     memcpy( srcBuffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
     copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
@@ -641,7 +641,7 @@ static int zstd_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 
   size_t copiedSz = 0;
 
-  for (int i = 0; i < input->length; i++) {
+  for (int i = 0; i < input->count; i++) {
     void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
     memcpy( srcBuffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
     copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
@@ -677,7 +677,9 @@ static int compress_inner(grpc_compression_algorithm algorithm,
     case GRPC_COMPRESS_LZ4:
       if (input->length > 4096)
         return lz4_compress(input, output);
-      else return 0;
+      else if (input->length > 512) {
+        return snappy_compress(input, output);
+      } else return 0;
     case GRPC_COMPRESS_SNAPPY:
       return snappy_compress(input, output);
     case GRPC_COMPRESS_ZSTD:
