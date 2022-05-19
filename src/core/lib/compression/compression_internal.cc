@@ -48,6 +48,10 @@ const char* CompressionAlgorithmAsString(grpc_compression_algorithm algorithm) {
       return "gzip";
     case GRPC_COMPRESS_LZ4:
       return "lz4";
+    case GRPC_COMPRESS_SNAPPY:
+      return "snappy";
+    case GRPC_COMPRESS_ZSTD:
+      return "zstd";
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
     default:
       return nullptr;
@@ -64,6 +68,10 @@ absl::optional<grpc_compression_algorithm> ParseCompressionAlgorithm(
     return GRPC_COMPRESS_GZIP;
   } else if (algorithm == "lz4") { 
     return  GRPC_COMPRESS_LZ4;
+  } else if ( algorithm == "snappy") {
+    return GRPC_COMPRESS_SNAPPY;
+  } else if ( algorithm == "zstd") {
+    return GRPC_COMPRESS_ZSTD;
   } else {
     return absl::nullopt;
   }
@@ -93,7 +101,7 @@ CompressionAlgorithmSet::CompressionAlgorithmForLevel(
   absl::InlinedVector<grpc_compression_algorithm,
                       GRPC_COMPRESS_ALGORITHMS_COUNT>
       algos;
-  for (auto algo : {GRPC_COMPRESS_GZIP, GRPC_COMPRESS_DEFLATE, GRPC_COMPRESS_LZ4}) {
+  for (auto algo : {GRPC_COMPRESS_GZIP, GRPC_COMPRESS_DEFLATE, GRPC_COMPRESS_LZ4, GRPC_COMPRESS_SNAPPY, GRPC_COMPRESS_ZSTD}) {
     if (set_.is_set(algo)) {
       algos.push_back(algo);
     }

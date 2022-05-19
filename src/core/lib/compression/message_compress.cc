@@ -26,7 +26,8 @@
 #include <string.h>
 #include <iostream>
 #include <zlib.h>
-
+#include <zstd.h> 
+#include <snappy/snappy.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 
@@ -531,6 +532,137 @@ static int copy(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   return 1;
 }
 
+static int snappy_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
+  void* buffer = malloc(input->length);
+  if ( buffer == NULL ) {
+    return 0;
+  }
+
+  size_t copiedSz = 0;
+
+  for (int i = 0; i < input->length; i++) {
+    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
+    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
+  }
+
+  std::string outputStr;
+  snappy::Uncompress( buffer , input->length , &outputStr);
+
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
+  printf("snappy uncompress from %u to %u \n", input->length , outputStr.size() );
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, outputStr.c_str() , outputStr.size() );
+  
+  grpc_slice_buffer_add_indexed(output, outbuf);
+  
+  free(buffer);
+
+  return 1;
+}
+
+static int snappy_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
+  void* buffer = malloc(input->length);
+  if ( buffer == NULL ) {
+    return 0;
+  }
+
+  size_t copiedSz = 0;
+  for (int i = 0; i < input->length; i++) {
+    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
+    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
+  }
+
+  std::string outputStr;
+  snappy::Compress( buffer , input->length , &outputStr);
+
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
+  printf("snappy compress from %u to %u \n", input->length , outputStr.size() );
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, outputStr.c_str() , outputStr.size() );
+  
+  grpc_slice_buffer_add_indexed(output, outbuf);
+  
+  free(buffer);
+
+  return 1;
+}
+
+static int zstd_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
+  void* srcBuffer = malloc(input->length);
+  if ( srcBuffer == NULL ) {
+    return 0;
+  }
+
+  size_t destBufferSz = ZSTD_compressBound( input->length );
+  void* destBuff = malloc(destBufferSz);
+  if ( destBuff == NULL ) {
+    return 0;
+  }
+
+  size_t copiedSz = 0;
+
+  for (int i = 0; i < input->length; i++) {
+    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy( srcBuffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
+    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
+  }
+
+  size_t compressedSize = ZSTD_decompress( destBuff, destBufferSz  ,
+                  srcBuffer , input->length);
+
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(compressedSize);
+  printf("zstd uncompress from %u to %u \n", input->length , compressedSize );
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, destBuff , compressedSize );
+
+  grpc_slice_buffer_add_indexed(output, outbuf);
+
+  free(srcBuffer);
+  free(destBuff);
+
+  return 1;
+  
+}
+
+static int zstd_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
+
+  void* srcBuffer = malloc(input->length);
+  if ( srcBuffer == NULL ) {
+    return 0;
+  }
+
+  size_t destBufferSz = ZSTD_compressBound( input->length );
+  void* destBuff = malloc(destBufferSz);
+  if ( destBuff == NULL ) {
+    return 0;
+  }
+
+  size_t copiedSz = 0;
+
+  for (int i = 0; i < input->length; i++) {
+    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy( srcBuffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
+    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
+  }
+
+  size_t compressedSize = ZSTD_compress( destBuff, destBufferSz  ,
+                  srcBuffer , input->length , 1);
+
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(compressedSize);
+  printf("zstd compress from %u to %u \n", input->length , compressedSize );
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, destBuff , compressedSize );
+
+  grpc_slice_buffer_add_indexed(output, outbuf);
+
+  free(srcBuffer);
+  free(destBuff);
+
+  return 1;
+}
+
 static int compress_inner(grpc_compression_algorithm algorithm,
                           grpc_slice_buffer* input, grpc_slice_buffer* output) {
   switch (algorithm) {
@@ -546,6 +678,10 @@ static int compress_inner(grpc_compression_algorithm algorithm,
       if (input->length > 4096)
         return lz4_compress(input, output);
       else return 0;
+    case GRPC_COMPRESS_SNAPPY:
+      return snappy_compress(input, output);
+    case GRPC_COMPRESS_ZSTD:
+      return zstd_compress(input, output);
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       break;
   }
@@ -573,6 +709,11 @@ int grpc_msg_decompress(grpc_compression_algorithm algorithm,
       return zlib_decompress(input, output, 1);
     case GRPC_COMPRESS_LZ4:
       return lz4_decompress(input, output);
+    case GRPC_COMPRESS_SNAPPY:
+      return snappy_decompress(input, output);
+    case GRPC_COMPRESS_ZSTD:
+      return zstd_decompress(input, output);
+      
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       break;
   }

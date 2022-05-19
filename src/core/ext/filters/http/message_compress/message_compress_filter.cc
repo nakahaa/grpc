@@ -193,6 +193,17 @@ void CallData::ProcessSendInitialMetadata(
       initial_metadata->Set(grpc_core::GrpcEncodingMetadata(),
                             compression_algorithm_);
       break;
+    case GRPC_COMPRESS_SNAPPY:
+      InitializeState(elem);
+      initial_metadata->Set(grpc_core::GrpcEncodingMetadata(),
+                            compression_algorithm_);
+      break;
+      
+    case GRPC_COMPRESS_ZSTD:
+      InitializeState(elem);
+      initial_metadata->Set(grpc_core::GrpcEncodingMetadata(),
+                            compression_algorithm_);
+      break;
     case GRPC_COMPRESS_ALGORITHMS_COUNT:
       abort();
   }
