@@ -447,7 +447,7 @@ static int decompress_slices(grpc_slice_buffer* input, grpc_slice_buffer* output
         if (LZ4F_isError(fires))
         {
             printf("LZ4F_getFrameInfo error: %s\n", LZ4F_getErrorName(fires));
-            return 0;
+            return snappy_decompress(input, output);
         }
     }
 
