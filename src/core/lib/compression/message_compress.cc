@@ -171,6 +171,63 @@ static size_t get_block_size(const LZ4F_frameInfo_t* info) {
   }
 }
 
+static int snappy_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
+  void* buffer = malloc(input->length);
+  if ( buffer == NULL ) {
+    return 0;
+  }
+
+  size_t copiedSz = 0;
+
+  for (int i = 0; i < input->count ; i++) {
+    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
+    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
+  }
+
+  std::string outputStr;
+  snappy::Uncompress( static_cast<const char*>(buffer) , input->length , &outputStr);
+
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
+  printf("snappy uncompress from %u to %u \n", input->length , outputStr.size() );
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, outputStr.c_str() , outputStr.size() );
+  
+  grpc_slice_buffer_add_indexed(output, outbuf);
+  
+  free(buffer);
+
+  return 1;
+}
+
+static int snappy_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
+  void* buffer = malloc(input->length);
+  if ( buffer == NULL ) {
+    return 0;
+  }
+
+  size_t copiedSz = 0;
+  for (int i = 0; i < input->count; i++) {
+    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
+    memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
+    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
+  }
+
+  std::string outputStr;
+  snappy::Compress( static_cast<const char*>(buffer) , input->length , &outputStr);
+
+  grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
+  printf("snappy compress from %u to %u \n", input->length , outputStr.size() );
+  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
+  memcpy(outBufferPtr, outputStr.c_str() , outputStr.size() );
+  
+  grpc_slice_buffer_add_indexed(output, outbuf);
+  
+  free(buffer);
+
+  return 1;
+}
+
 
 typedef struct
 {
@@ -531,63 +588,6 @@ static int copy(grpc_slice_buffer* input, grpc_slice_buffer* output) {
   for (i = 0; i < input->count; i++) {
     grpc_slice_buffer_add(output, grpc_slice_ref_internal(input->slices[i]));
   }
-  return 1;
-}
-
-static int snappy_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
-  void* buffer = malloc(input->length);
-  if ( buffer == NULL ) {
-    return 0;
-  }
-
-  size_t copiedSz = 0;
-
-  for (int i = 0; i < input->count ; i++) {
-    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
-    memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
-    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
-  }
-
-  std::string outputStr;
-  snappy::Uncompress( static_cast<const char*>(buffer) , input->length , &outputStr);
-
-  grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
-  printf("snappy uncompress from %u to %u \n", input->length , outputStr.size() );
-  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
-  memcpy(outBufferPtr, outputStr.c_str() , outputStr.size() );
-  
-  grpc_slice_buffer_add_indexed(output, outbuf);
-  
-  free(buffer);
-
-  return 1;
-}
-
-static int snappy_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
-  void* buffer = malloc(input->length);
-  if ( buffer == NULL ) {
-    return 0;
-  }
-
-  size_t copiedSz = 0;
-  for (int i = 0; i < input->count; i++) {
-    void* slicePtr = GRPC_SLICE_START_PTR( input->slices[i] );
-    memcpy( buffer + copiedSz , slicePtr, GRPC_SLICE_LENGTH( input->slices[i] ) ); 
-    copiedSz += GRPC_SLICE_LENGTH( input->slices[i] );
-  }
-
-  std::string outputStr;
-  snappy::Compress( static_cast<const char*>(buffer) , input->length , &outputStr);
-
-  grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
-  printf("snappy compress from %u to %u \n", input->length , outputStr.size() );
-  void* outBufferPtr = GRPC_SLICE_START_PTR(outbuf);
-  memcpy(outBufferPtr, outputStr.c_str() , outputStr.size() );
-  
-  grpc_slice_buffer_add_indexed(output, outbuf);
-  
-  free(buffer);
-
   return 1;
 }
 
