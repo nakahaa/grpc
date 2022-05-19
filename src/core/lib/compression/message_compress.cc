@@ -447,7 +447,7 @@ static int decompress_slices(grpc_slice_buffer* input, grpc_slice_buffer* output
         if (LZ4F_isError(fires))
         {
             printf("LZ4F_getFrameInfo error: %s\n", LZ4F_getErrorName(fires));
-            return snappy_decompress(input, output);
+            return 0;
         }
     }
 
@@ -517,6 +517,8 @@ static int lz4_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output) {
     output->count = count_before;
     output->length = length_before;
 
+    // try snappy decompress
+    return snappy_decompress(input, output);
   } else {
     printf("Stream Uncompressed: in %d, out %d \n", input->length, output->length);
   }
