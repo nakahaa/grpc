@@ -27,7 +27,7 @@
 #include <iostream>
 #include <zlib.h>
 #include <zstd.h> 
-#include <snappy/snappy.h>
+#include <snappy.h>
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 
@@ -547,7 +547,7 @@ static int snappy_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output
   }
 
   std::string outputStr;
-  snappy::Uncompress( buffer , input->length , &outputStr);
+  snappy::Uncompress( static_cast<const char*>(buffer) , input->length , &outputStr);
 
   grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
   printf("snappy uncompress from %u to %u \n", input->length , outputStr.size() );
@@ -575,7 +575,7 @@ static int snappy_compress(grpc_slice_buffer* input, grpc_slice_buffer* output) 
   }
 
   std::string outputStr;
-  snappy::Compress( buffer , input->length , &outputStr);
+  snappy::Compress( static_cast<const char*>(buffer) , input->length , &outputStr);
 
   grpc_slice outbuf = GRPC_SLICE_MALLOC(outputStr.size());
   printf("snappy compress from %u to %u \n", input->length , outputStr.size() );
