@@ -105,7 +105,7 @@ static int zlib_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
   memset(&zs, 0, sizeof(zs));
   zs.zalloc = zalloc_gpr;
   zs.zfree = zfree_gpr;
-  r = deflateInit2(&zs, 6, Z_DEFLATED, 15 | (gzip ? 16 : 0),
+  r = deflateInit2(&zs, 1, Z_DEFLATED, 15 | (gzip ? 16 : 0),
                    8, Z_DEFAULT_STRATEGY);
   GPR_ASSERT(r == Z_OK);
   r = zlib_body(&zs, input, output, deflate) && output->length < input->length;
@@ -541,7 +541,9 @@ static int compress_inner(grpc_compression_algorithm algorithm,
     case GRPC_COMPRESS_DEFLATE:
       return zlib_compress(input, output, 0);
     case GRPC_COMPRESS_GZIP:
-      return zlib_compress(input, output, 1);
+      if (input->length > 4096)
+        return zlib_compress(input, output, 1);
+      else return 0;
     case GRPC_COMPRESS_LZ4:
       if (input->length > 4096)
         return lz4_compress(input, output);
