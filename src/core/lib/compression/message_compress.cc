@@ -105,7 +105,7 @@ static int zlib_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
   memset(&zs, 0, sizeof(zs));
   zs.zalloc = zalloc_gpr;
   zs.zfree = zfree_gpr;
-  r = deflateInit2(&zs, 1, Z_DEFLATED, 15 | (gzip ? 16 : 0),
+  r = deflateInit2(&zs, 2, Z_DEFLATED, 15 | (gzip ? 16 : 0),
                    8, Z_DEFAULT_STRATEGY);
   GPR_ASSERT(r == Z_OK);
   r = zlib_body(&zs, input, output, deflate) && output->length < input->length;
@@ -147,7 +147,7 @@ static int zlib_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output,
 static const LZ4F_preferences_t kPrefs = {
     {LZ4F_max64KB, LZ4F_blockLinked, LZ4F_noContentChecksum, LZ4F_frame, 0,
      LZ4F_noBlockChecksum},
-    0,
+    6,
     0,
     0,
     {0, 0, 0},
