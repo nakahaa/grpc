@@ -147,9 +147,9 @@ static int zlib_decompress(grpc_slice_buffer* input, grpc_slice_buffer* output,
 static const LZ4F_preferences_t kPrefs = {
     {LZ4F_max64KB, LZ4F_blockLinked, LZ4F_noContentChecksum, LZ4F_frame, 0,
      LZ4F_noBlockChecksum},
-    7,
+    6,
     0,
-    0,
+    1,
     {0, 0, 0},
 };
 
