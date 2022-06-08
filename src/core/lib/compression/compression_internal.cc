@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include <zlib.h>
 #include <cstdint>
 
 #include "absl/container/inlined_vector.h"
@@ -35,6 +35,8 @@
 #include "src/core/lib/gpr/useful.h"
 #include "src/core/lib/slice/slice_internal.h"
 #include "src/core/lib/surface/api_trace.h"
+
+#define Z_DEFAULT_COMPRESSION_LOWER_BOUND  (0)
 
 namespace grpc_core {
 
@@ -212,6 +214,36 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
     }
   }
   return absl::nullopt;
+}
+
+int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
+  if (args == nullptr) return Z_DEFAULT_COMPRESSION;
+  for (size_t i = 0; i < args->num_args; i++) {
+    if (strcmp(args->args[i].key, GRPC_GZIP_COMPRESSION_LEVEL) ==
+        0) {
+      if (args->args[i].type == GRPC_ARG_INTEGER) {
+        return args->args[i].value.integer;
+      } else if (args->args[i].type == GRPC_ARG_STRING) {
+        return Z_DEFAULT_COMPRESSION;
+      }
+    }
+  }
+  return Z_DEFAULT_COMPRESSION;
+}
+
+int DefaultCompressionLowerBoundFromChannelArgs(const grpc_channel_args* args) {
+  if (args == nullptr) return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
+  for (size_t i = 0; i < args->num_args; i++) {
+    if (strcmp(args->args[i].key, GRPC_COMPRESSION_LOWER_BOUND) ==
+        0) {
+      if (args->args[i].type == GRPC_ARG_INTEGER) {
+        return args->args[i].value.integer;
+      } else if (args->args[i].type == GRPC_ARG_STRING) {
+        return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
+      }
+    }
+  }
+  return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
 }
 
 }  // namespace grpc_core
