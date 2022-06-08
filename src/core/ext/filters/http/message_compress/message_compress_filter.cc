@@ -81,6 +81,14 @@ class ChannelData {
     return default_compression_algorithm_;
   }
 
+  int default_gzip_compression_level() const {
+    return default_gzip_compression_level_;
+  }
+
+  int default_compression_lower_bound() const {
+    return default_compression_lower_bound_;
+  }
+
   grpc_core::CompressionAlgorithmSet enabled_compression_algorithms() const {
     return enabled_compression_algorithms_;
   }
@@ -106,8 +114,8 @@ class CallData {
       compression_algorithm_ = channeld->default_compression_algorithm();
     }
 
-    gzip_compression_level_ = channeld->default_gzip_compression_level;
-    compression_lower_bound_ = channeld->default_compression_lower_bound;
+    gzip_compression_level_ = channeld->default_gzip_compression_level();
+    compression_lower_bound_ = channeld->default_compression_lower_bound();
     GRPC_CLOSURE_INIT(&start_send_message_batch_in_call_combiner_,
                       StartSendMessageBatch, elem, grpc_schedule_on_exec_ctx);
   }
