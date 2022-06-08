@@ -72,6 +72,7 @@ class CompressionAlgorithmSet {
   // Add algorithm to this set.
   void Set(grpc_compression_algorithm algorithm);
 
+  size_t GzipCompressionForLevel() const;
   // Return a comma separated string of the algorithms in this set.
   std::string ToString() const;
   Slice ToSlice() const;
