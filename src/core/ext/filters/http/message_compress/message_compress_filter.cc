@@ -66,13 +66,13 @@ class ChannelData {
       default_compression_algorithm_ = GRPC_COMPRESS_NONE;
     }
 
-    default_compression_lower_bound_ = grpc_core::DefaultCompressionLowerBoundFromChannelArgs(
-      args->channel_args
-    );
+    default_compression_lower_bound_ =
+        grpc_core::DefaultCompressionLowerBoundFromChannelArgs(
+            args->channel_args);
 
-    default_gzip_compression_level_ = grpc_core::DefaultGzipCompressionLevelFromChannelArgs(
-      args->channel_args
-    );
+    default_gzip_compression_level_ =
+        grpc_core::DefaultGzipCompressionLevelFromChannelArgs(
+            args->channel_args);
 
     GPR_ASSERT(!args->is_last);
   }
