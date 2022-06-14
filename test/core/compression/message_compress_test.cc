@@ -73,7 +73,9 @@ static void assert_passthrough(grpc_slice value,
 
   {
     grpc_core::ExecCtx exec_ctx;
-    was_compressed = grpc_msg_compress(algorithm, default_gzip_compression_level_, default_compression_lower_bound_, &input, &compressed_raw);
+    was_compressed = grpc_msg_compress(
+        algorithm, default_gzip_compression_level_,
+        default_compression_lower_bound_, &input, &compressed_raw);
   }
   GPR_ASSERT(input.count > 0);
 
@@ -155,11 +157,10 @@ static void test_tiny_data_compress(void) {
   for (int i = 0; i < GRPC_COMPRESS_ALGORITHMS_COUNT; i++) {
     if (i == GRPC_COMPRESS_NONE) continue;
     grpc_core::ExecCtx exec_ctx;
-    GPR_ASSERT(0 ==
-               grpc_msg_compress(static_cast<grpc_compression_algorithm>(i),
-                                default_gzip_compression_level_,
-                                default_compression_lower_bound_,
-                                 &input, &output));
+    GPR_ASSERT(0 == grpc_msg_compress(
+                        static_cast<grpc_compression_algorithm>(i),
+                        default_gzip_compression_level_,
+                        default_compression_lower_bound_, &input, &output));
     GPR_ASSERT(1 == output.count);
   }
 
@@ -183,7 +184,8 @@ static void test_bad_decompression_data_crc(void) {
 
   grpc_core::ExecCtx exec_ctx;
   /* compress it */
-  grpc_msg_compress(GRPC_COMPRESS_GZIP, default_gzip_compression_level_, default_compression_lower_bound_, &input, &corrupted);
+  grpc_msg_compress(GRPC_COMPRESS_GZIP, default_gzip_compression_level_,
+                    default_compression_lower_bound_, &input, &corrupted);
   /* corrupt the output by smashing the CRC */
   GPR_ASSERT(corrupted.count > 1);
   GPR_ASSERT(GRPC_SLICE_LENGTH(corrupted.slices[1]) > 8);
@@ -214,7 +216,8 @@ static void test_bad_decompression_data_missing_trailer(void) {
 
   grpc_core::ExecCtx exec_ctx;
   /* compress it */
-  grpc_msg_compress(GRPC_COMPRESS_GZIP, default_gzip_compression_level_, default_compression_lower_bound_, &input, &decompressed);
+  grpc_msg_compress(GRPC_COMPRESS_GZIP, default_gzip_compression_level_,
+                    default_compression_lower_bound_, &input, &decompressed);
   GPR_ASSERT(decompressed.length > 8);
   /* Remove the footer from the decompressed message */
   grpc_slice_buffer_trim_end(&decompressed, 8, &garbage);
@@ -281,11 +284,11 @@ static void test_bad_compression_algorithm(void) {
       grpc_msg_compress(GRPC_COMPRESS_ALGORITHMS_COUNT, &input, &output);
   GPR_ASSERT(0 == was_compressed);
 
-  was_compressed = grpc_msg_compress(static_cast<grpc_compression_algorithm>(
-                                         GRPC_COMPRESS_ALGORITHMS_COUNT + 123),
-                                      default_gzip_compression_level_, 
-                                      default_compression_lower_bound_,
-                                     &input, &output);
+  was_compressed =
+      grpc_msg_compress(static_cast<grpc_compression_algorithm>(
+                            GRPC_COMPRESS_ALGORITHMS_COUNT + 123),
+                        default_gzip_compression_level_,
+                        default_compression_lower_bound_, &input, &output);
   GPR_ASSERT(0 == was_compressed);
 
   grpc_slice_buffer_destroy(&input);
