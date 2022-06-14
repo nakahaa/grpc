@@ -78,13 +78,13 @@ class ChannelData {
       default_compression_algorithm_ = GRPC_COMPRESS_NONE;
     }
 
-    default_compression_lower_bound_ = grpc_core::DefaultCompressionLowerBoundFromChannelArgs(
-      args->channel_args
-    );
+    default_compression_lower_bound_ =
+        grpc_core::DefaultCompressionLowerBoundFromChannelArgs(
+            args->channel_args);
 
-    default_gzip_compression_level_ = grpc_core::DefaultGzipCompressionLevelFromChannelArgs(
-      args->channel_args
-    );
+    default_gzip_compression_level_ =
+        grpc_core::DefaultGzipCompressionLevelFromChannelArgs(
+            args->channel_args);
 
     GPR_ASSERT(!args->is_last);
   }
@@ -255,7 +255,9 @@ void CallData::FinishSendMessage(grpc_call_element* elem) {
   grpc_slice_buffer_init(&tmp);
   uint32_t send_flags =
       send_message_batch_->payload->send_message.send_message->flags();
-  bool did_compress = grpc_msg_compress(compression_algorithm_, gzip_compression_level_, compression_lower_bound_, &slices_, &tmp);
+  bool did_compress =
+      grpc_msg_compress(compression_algorithm_, gzip_compression_level_,
+                        compression_lower_bound_, &slices_, &tmp);
   if (did_compress) {
     if (GRPC_TRACE_FLAG_ENABLED(grpc_compression_trace)) {
       const char* algo_name;
