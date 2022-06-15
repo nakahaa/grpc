@@ -251,33 +251,15 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
 }
 
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
-  if (args == nullptr) return Z_DEFAULT_COMPRESSION;
-  for (size_t i = 0; i < args->num_args; i++) {
-    if (strcmp(args->args[i].key, GRPC_GZIP_COMPRESSION_LEVEL) ==
-        0) {
-      if (args->args[i].type == GRPC_ARG_INTEGER) {
-        return args->args[i].value.integer;
-      } else if (args->args[i].type == GRPC_ARG_STRING) {
-        return Z_DEFAULT_COMPRESSION;
-      }
-    }
-  }
-  return Z_DEFAULT_COMPRESSION;
+  return grpc_channel_arg_get_integer(
+    GRPC_GZIP_COMPRESSION_LEVEL,
+    {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
 }
 
 int DefaultCompressionLowerBoundFromChannelArgs(const grpc_channel_args* args) {
-  if (args == nullptr) return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
-  for (size_t i = 0; i < args->num_args; i++) {
-    if (strcmp(args->args[i].key, GRPC_COMPRESSION_LOWER_BOUND) ==
-        0) {
-      if (args->args[i].type == GRPC_ARG_INTEGER) {
-        return args->args[i].value.integer;
-      } else if (args->args[i].type == GRPC_ARG_STRING) {
-        return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
-      }
-    }
-  }
-  return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
+  return grpc_channel_arg_get_integer(
+    GRPC_COMPRESSION_LOWER_BOUND,
+    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
 }
 
 }  // namespace grpc_core
