@@ -156,7 +156,7 @@ static int copy(grpc_slice_buffer* input, grpc_slice_buffer* output) {
 static int compress_inner(grpc_compression_algorithm algorithm,
                           grpc_slice_buffer* input, 
                           grpc_slice_buffer* output,
-                          grpc_compression_options options) {
+                          gzip_compression_options options) {
   switch (algorithm) {
     case GRPC_COMPRESS_NONE:
       /* the fallback path always needs to be send uncompressed: we simply
