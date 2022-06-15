@@ -251,15 +251,29 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
 }
 
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
-  return grpc_channel_arg_get_integer(
-    GRPC_GZIP_COMPRESSION_LEVEL,
-    {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
+  if (args == nullptr) return Z_DEFAULT_COMPRESSION;
+  for (size_t i = 0; i < args->num_args; i++) {
+    if (strcmp(args->args[i].key, GRPC_GZIP_COMPRESSION_LEVEL) ==
+        0) {
+      return grpc_channel_arg_get_integer(
+        &args->args[i],
+        {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
+    }
+  }
+  return Z_DEFAULT_COMPRESSION;
 }
 
 int DefaultCompressionLowerBoundFromChannelArgs(const grpc_channel_args* args) {
-  return grpc_channel_arg_get_integer(
-    GRPC_COMPRESSION_LOWER_BOUND,
-    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
+  if (args == nullptr) return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
+  for (size_t i = 0; i < args->num_args; i++) {
+    if (strcmp(args->args[i].key, GRPC_COMPRESSION_LOWER_BOUND) ==
+        0) {
+      return grpc_channel_arg_get_integer(
+        &args->args[i],
+        {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
+    }
+  }
+  return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
 }
 
 }  // namespace grpc_core
