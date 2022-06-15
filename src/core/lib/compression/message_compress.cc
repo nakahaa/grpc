@@ -94,7 +94,7 @@ static void* zalloc_gpr(void* /*opaque*/, unsigned int items,
 static void zfree_gpr(void* /*opaque*/, void* address) { gpr_free(address); }
 
 static int zlib_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
-                         int gzip, grpc_compression_options options) {
+                         int gzip, gzip_compression_options options) {
   if( input->length > options.compression_lower_bound ) 
     return 0;
   
@@ -176,7 +176,7 @@ static int compress_inner(grpc_compression_algorithm algorithm,
 int grpc_msg_compress(grpc_compression_algorithm algorithm,
                       grpc_slice_buffer* input, 
                       grpc_slice_buffer* output,
-                      grpc_compression_options options) {
+                      gzip_compression_options options) {
   if (!compress_inner(algorithm, input, output, options)) {
     copy(input, output);
     return 0;

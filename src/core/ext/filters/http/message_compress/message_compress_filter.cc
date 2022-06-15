@@ -254,7 +254,7 @@ void CallData::FinishSendMessage(grpc_call_element* elem) {
   grpc_slice_buffer_init(&tmp);
   uint32_t send_flags =
       send_message_batch_->payload->send_message.send_message->flags();
-  grpc_compression_options options{
+  gzip_compression_options options{
     gzip_compression_level: gzip_compression_level_,
     compression_lower_bound: compression_lower_bound_,
   };
