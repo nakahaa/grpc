@@ -20,10 +20,11 @@
 
 #include "src/core/lib/compression/compression_internal.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <zlib.h>
-#include <cstdint>
 
 #include "absl/container/inlined_vector.h"
 #include "absl/strings/ascii.h"
@@ -35,7 +36,7 @@
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/surface/api_trace.h"
 
-#define Z_DEFAULT_COMPRESSION_LOWER_BOUND  (0)
+#define Z_DEFAULT_COMPRESSION_LOWER_BOUND (0)
 
 namespace grpc_core {
 
@@ -253,11 +254,9 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
   if (args == nullptr) return Z_DEFAULT_COMPRESSION;
   for (size_t i = 0; i < args->num_args; i++) {
-    if (strcmp(args->args[i].key, GRPC_GZIP_COMPRESSION_LEVEL) ==
-        0) {
-      return grpc_channel_arg_get_integer(
-        &args->args[i],
-        {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
+    if (strcmp(args->args[i].key, GRPC_GZIP_COMPRESSION_LEVEL) == 0) {
+      return grpc_channel_arg_get_integer(&args->args[i],
+                                          {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
     }
   }
   return Z_DEFAULT_COMPRESSION;
@@ -266,11 +265,9 @@ int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
 int DefaultCompressionLowerBoundFromChannelArgs(const grpc_channel_args* args) {
   if (args == nullptr) return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
   for (size_t i = 0; i < args->num_args; i++) {
-    if (strcmp(args->args[i].key, GRPC_COMPRESSION_LOWER_BOUND) ==
-        0) {
+    if (strcmp(args->args[i].key, GRPC_COMPRESSION_LOWER_BOUND) == 0) {
       return grpc_channel_arg_get_integer(
-        &args->args[i],
-        {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
+          &args->args[i], {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
     }
   }
   return Z_DEFAULT_COMPRESSION_LOWER_BOUND;
