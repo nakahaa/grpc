@@ -22,8 +22,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
+
 #include <cstdint>
+
+#include <zlib.h>
 
 #include "absl/container/inlined_vector.h"
 #include "absl/strings/ascii.h"
@@ -35,7 +37,7 @@
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/surface/api_trace.h"
 
-#define Z_DEFAULT_COMPRESSION_LOWER_BOUND  (0)
+#define Z_DEFAULT_COMPRESSION_LOWER_BOUND (0)
 
 namespace grpc_core {
 
@@ -251,15 +253,14 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
 }
 
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
-  return grpc_channel_arg_get_integer(
-    GRPC_GZIP_COMPRESSION_LEVEL,
-    {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
+  return grpc_channel_arg_get_integer(GRPC_GZIP_COMPRESSION_LEVEL,
+                                      {Z_DEFAULT_COMPRESSION, 0, INT_MAX});
 }
 
 int DefaultCompressionLowerBoundFromChannelArgs(const grpc_channel_args* args) {
   return grpc_channel_arg_get_integer(
-    GRPC_COMPRESSION_LOWER_BOUND,
-    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
+      GRPC_COMPRESSION_LOWER_BOUND,
+      {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
 }
 
 }  // namespace grpc_core
