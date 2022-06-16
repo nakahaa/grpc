@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include <initializer_list>
+#include <memory>
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -50,7 +51,8 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args);
 
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args);
 
-int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(const grpc_channel_args* args);
+int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(
+    const grpc_channel_args* args);
 
 // A set of grpc_compression_algorithm values.
 class CompressionAlgorithmSet {
@@ -98,7 +100,8 @@ class CompressionOptions {
 };
 
 // Return Compression options
-std::unique_ptr<CompressionOptions> MakeCompressionOptions(const grpc_channel_args* args);
+std::unique_ptr<CompressionOptions> MakeCompressionOptions(
+    const grpc_channel_args* args);
 
 }  // namespace grpc_core
 

@@ -20,12 +20,12 @@
 
 #include "src/core/lib/compression/compression_internal.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
-#include <cstdint>
 
 #include "absl/container/inlined_vector.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_split.h"
 
@@ -35,7 +35,7 @@
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/surface/api_trace.h"
 
-#define Z_DEFAULT_COMPRESSION_LOWER_BOUND  (0)
+#define Z_DEFAULT_COMPRESSION_LOWER_BOUND (0)
 
 namespace grpc_core {
 
@@ -252,16 +252,15 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
 
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
   return grpc_channel_args_find_integer(
-    args,
-    GRPC_GZIP_COMPRESSION_LEVEL,
-    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, 12});
+      args, GRPC_GZIP_COMPRESSION_LEVEL,
+      {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, 12});
 }
 
-int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(const grpc_channel_args* args) {
+int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(
+    const grpc_channel_args* args) {
   return grpc_channel_args_find_integer(
-    args,
-    GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS,
-    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
+      args, GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS,
+      {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
 }
 
 class CompressionOptionsImpl : public CompressionOptions {
@@ -270,16 +269,16 @@ class CompressionOptionsImpl : public CompressionOptions {
       : gzip_compression_level_(
             DefaultGzipCompressionLevelFromChannelArgs(args)) {}
 
-  explicit CompressionOptionsImpl()
-      : gzip_compression_level_(0) {}
-      
+  explicit CompressionOptionsImpl() : gzip_compression_level_(0) {}
+
   int gzip_compression_level() const { return gzip_compression_level_; }
-  
+
  private:
   int gzip_compression_level_;
 };
 
-std::unique_ptr<CompressionOptions> MakeCompressionOptions(const grpc_channel_args* args) {
+std::unique_ptr<CompressionOptions> MakeCompressionOptions(
+    const grpc_channel_args* args) {
   return absl::make_unique<CompressionOptionsImpl>(args);
 }
 
