@@ -78,13 +78,13 @@ class ChannelData {
       default_compression_algorithm_ = GRPC_COMPRESS_NONE;
     }
 
-    default_grpc_min_message_size_to_compress_ = grpc_core::DefaultGrpcMinMessageSizeToCompressFromChannelArgs(
-      args->channel_args
-    );
+    default_grpc_min_message_size_to_compress_ =
+        grpc_core::DefaultGrpcMinMessageSizeToCompressFromChannelArgs(
+            args->channel_args);
 
-    default_gzip_compression_level_ = grpc_core::DefaultGzipCompressionLevelFromChannelArgs(
-      args->channel_args
-    );
+    default_gzip_compression_level_ =
+        grpc_core::DefaultGzipCompressionLevelFromChannelArgs(
+            args->channel_args);
 
     GPR_ASSERT(!args->is_last);
   }
@@ -126,7 +126,8 @@ class CallData {
       compression_algorithm_ = channeld->default_compression_algorithm();
     }
     gzip_compression_level_ = channeld->default_gzip_compression_level();
-    grpc_min_message_size_to_compress_ = channeld->default_grpc_min_message_size_to_compress();
+    grpc_min_message_size_to_compress_ =
+        channeld->default_grpc_min_message_size_to_compress();
     GRPC_CLOSURE_INIT(&start_send_message_batch_in_call_combiner_,
                       StartSendMessageBatch, elem, grpc_schedule_on_exec_ctx);
   }
@@ -192,9 +193,9 @@ bool CallData::SkipMessageCompression() {
   if (flags & (GRPC_WRITE_NO_COMPRESS | GRPC_WRITE_INTERNAL_COMPRESS)) {
     return true;
   }
-  // If the message size is less than the grpc_min_message_size_to_compress_, 
+  // If the message size is less than the grpc_min_message_size_to_compress_,
   // skip message compression.
-  if ( slices_.length < grpc_min_message_size_to_compress_ ) {
+  if (slices_.length < grpc_min_message_size_to_compress_) {
     return true;
   }
   // If this call doesn't have any message compression algorithm set, skip
@@ -260,9 +261,10 @@ void CallData::FinishSendMessage(grpc_call_element* elem) {
   uint32_t send_flags =
       send_message_batch_->payload->send_message.send_message->flags();
   gzip_compression_options options{
-    gzip_compression_level: gzip_compression_level_,
+    gzip_compression_level : gzip_compression_level_,
   };
-  bool did_compress = grpc_msg_compress(compression_algorithm_, &slices_, &tmp, options);
+  bool did_compress =
+      grpc_msg_compress(compression_algorithm_, &slices_, &tmp, options);
   if (did_compress) {
     if (GRPC_TRACE_FLAG_ENABLED(grpc_compression_trace)) {
       const char* algo_name;
