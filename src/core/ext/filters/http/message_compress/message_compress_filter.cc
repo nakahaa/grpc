@@ -97,7 +97,7 @@ class ChannelData {
     return default_gzip_compression_level_;
   }
 
-  int default_compression_lower_bound() const {
+  int default_grpc_min_message_size_to_compress() const {
     return default_grpc_min_message_size_to_compress_;
   }
 
@@ -194,7 +194,7 @@ bool CallData::SkipMessageCompression() {
   }
   // If the message size is less than the default_grpc_min_message_size_to_compress_, 
   // skip message compression.
-  if ( slices_->length < default_grpc_min_message_size_to_compress_) {
+  if ( slices_->length < channeld->default_grpc_min_message_size_to_compress() ) {
     return true;
   }
   // If this call doesn't have any message compression algorithm set, skip
