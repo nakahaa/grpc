@@ -126,7 +126,7 @@ class CallData {
       compression_algorithm_ = channeld->default_compression_algorithm();
     }
     gzip_compression_level_ = channeld->default_gzip_compression_level();
-    compression_lower_bound_ = channeld->default_compression_lower_bound();
+    grpc_min_message_size_to_compress_ = channeld->default_grpc_min_message_size_to_compress();
     GRPC_CLOSURE_INIT(&start_send_message_batch_in_call_combiner_,
                       StartSendMessageBatch, elem, grpc_schedule_on_exec_ctx);
   }
@@ -163,7 +163,7 @@ class CallData {
   grpc_core::CallCombiner* call_combiner_;
   grpc_compression_algorithm compression_algorithm_ = GRPC_COMPRESS_NONE;
   int gzip_compression_level_;
-  int compression_lower_bound_;
+  int grpc_min_message_size_to_compress_;
   grpc_error_handle cancel_error_ = GRPC_ERROR_NONE;
   grpc_transport_stream_op_batch* send_message_batch_ = nullptr;
   bool seen_initial_metadata_ = false;
@@ -192,9 +192,9 @@ bool CallData::SkipMessageCompression() {
   if (flags & (GRPC_WRITE_NO_COMPRESS | GRPC_WRITE_INTERNAL_COMPRESS)) {
     return true;
   }
-  // If the message size is less than the default_grpc_min_message_size_to_compress_, 
+  // If the message size is less than the grpc_min_message_size_to_compress_, 
   // skip message compression.
-  if ( slices_->length < channeld->default_grpc_min_message_size_to_compress() ) {
+  if ( slices_->length < grpc_min_message_size_to_compress_ ) {
     return true;
   }
   // If this call doesn't have any message compression algorithm set, skip
