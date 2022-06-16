@@ -31,9 +31,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int default_gzip_compression_level_ = 6;
   int default_grpc_min_message_size_to_compress_ = 0;
   
-  gzip_compression_options options{
-    gzip_compression_level: 6,
-  };
+  grpc_core::CompressionOptions options;
   if (size < 1) return 0;
 
   // Instead of rolling something complicated to convert a uint8_t to the enum,
@@ -53,7 +51,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   grpc_msg_compress(compression_algorithm, 
                     &input_buffer, &output_buffer,
-                    options);
+                    &options);
 
   grpc_slice_buffer_destroy(&input_buffer);
   grpc_slice_buffer_destroy(&output_buffer);
