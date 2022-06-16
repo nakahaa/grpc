@@ -264,4 +264,23 @@ int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(const grpc_channel_args* 
     {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
 }
 
+class CompressionOptionsImpl : public CompressionOptions {
+ public:
+  explicit CompressionOptionsImpl(const grpc_channel_args* args)
+      : gzip_compression_level_(
+            DefaultGzipCompressionLevelFromChannelArgs(args)) {}
+
+  explicit CompressionOptionsImpl()
+      : gzip_compression_level_(0) {}
+      
+  int gzip_compression_level() const { return gzip_compression_level_; }
+  
+ private:
+  int gzip_compression_level_;
+};
+
+std::unique_ptr<CompressionOptions> MakeCompressionOptions(const grpc_channel_args* args) {
+  return absl::make_unique<CompressionOptionsImpl>(args);
+}
+
 }  // namespace grpc_core

@@ -92,6 +92,14 @@ class CompressionAlgorithmSet {
   BitSet<GRPC_COMPRESS_ALGORITHMS_COUNT> set_;
 };
 
+class CompressionOptions {
+ public:
+  virtual ~CompressionOptions() = default;
+};
+
+// Return Compression options
+std::unique_ptr<CompressionOptions> MakeCompressionOptions(const grpc_channel_args* args);
+
 }  // namespace grpc_core
 
 #endif /* GRPC_CORE_LIB_COMPRESSION_COMPRESSION_INTERNAL_H */

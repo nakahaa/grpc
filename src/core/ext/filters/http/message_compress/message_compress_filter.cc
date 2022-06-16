@@ -86,6 +86,8 @@ class ChannelData {
       args->channel_args
     );
 
+    compression_options_ = grpc_core::MakeCompressionOptions(args);
+
     GPR_ASSERT(!args->is_last);
   }
 
@@ -105,6 +107,10 @@ class ChannelData {
     return enabled_compression_algorithms_;
   }
 
+  grpc_core::CompressionOptions default_compression_options() const {
+    return compression_options_;
+  }
+
  private:
   /** The default, channel-level, compression algorithm */
   grpc_compression_algorithm default_compression_algorithm_;
@@ -112,6 +118,7 @@ class ChannelData {
   grpc_core::CompressionAlgorithmSet enabled_compression_algorithms_;
   int default_gzip_compression_level_;
   int default_grpc_min_message_size_to_compress_;
+  grpc_core::CompressionOptions* compression_options_;
 };
 
 class CallData {
@@ -127,8 +134,9 @@ class CallData {
     }
     gzip_compression_level_ = channeld->default_gzip_compression_level();
     grpc_min_message_size_to_compress_ = channeld->default_grpc_min_message_size_to_compress();
+    compression_options_ = channeld->default_compression_options();
     GRPC_CLOSURE_INIT(&start_send_message_batch_in_call_combiner_,
-                      StartSendMessageBatch, elem, grpc_schedule_on_exec_ctx);
+                      StartSendMessageBatch, elem, grpc_schedule_on_exec_ctx);    
   }
 
   ~CallData() {
@@ -166,6 +174,7 @@ class CallData {
   int grpc_min_message_size_to_compress_;
   grpc_error_handle cancel_error_ = GRPC_ERROR_NONE;
   grpc_transport_stream_op_batch* send_message_batch_ = nullptr;
+  grpc_core::CompressionOptions* compression_options_;
   bool seen_initial_metadata_ = false;
   /* Set to true, if the fields below are initialized. */
   bool state_initialized_ = false;
@@ -194,7 +203,8 @@ bool CallData::SkipMessageCompression() {
   }
   // If the message size is less than the grpc_min_message_size_to_compress_, 
   // skip message compression.
-  if ( slices_.length < grpc_min_message_size_to_compress_ ) {
+  if (send_message_batch_->payload->send_message.send_message->length() < 
+      grpc_min_message_size_to_compress_ ) {
     return true;
   }
   // If this call doesn't have any message compression algorithm set, skip
@@ -262,7 +272,7 @@ void CallData::FinishSendMessage(grpc_call_element* elem) {
   gzip_compression_options options{
     gzip_compression_level: gzip_compression_level_,
   };
-  bool did_compress = grpc_msg_compress(compression_algorithm_, &slices_, &tmp, options);
+  bool did_compress = grpc_msg_compress(compression_algorithm_, &slices_, &tmp, compression_options_);
   if (did_compress) {
     if (GRPC_TRACE_FLAG_ENABLED(grpc_compression_trace)) {
       const char* algo_name;
