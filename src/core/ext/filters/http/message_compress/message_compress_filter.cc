@@ -194,7 +194,7 @@ bool CallData::SkipMessageCompression() {
   }
   // If the message size is less than the grpc_min_message_size_to_compress_, 
   // skip message compression.
-  if ( slices_->length < grpc_min_message_size_to_compress_ ) {
+  if ( slices_.length < grpc_min_message_size_to_compress_ ) {
     return true;
   }
   // If this call doesn't have any message compression algorithm set, skip
