@@ -311,12 +311,13 @@ typedef struct {
 #define GRPC_ARG_SOCKET_MUTATOR "grpc.socket_mutator"
 /** The grpc_socket_factory instance to create and bind sockets. A pointer. */
 #define GRPC_ARG_SOCKET_FACTORY "grpc.socket_factory"
-/** The grpc_gzip_compression_level instance to gzip compression level. 
+/** The grpc_gzip_compression_level instance to gzip compression level.
     Int valued, bytes. */
 #define GRPC_GZIP_COMPRESSION_LEVEL "grpc.gzip_compression_level"
 /** The grpc_min_message_size_to_compress instance message size should meet
     at least. Int valued, bytes. */
-#define GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS "grpc.gprc_min_message_size_to_compress"
+#define GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS \
+  "grpc.gprc_min_message_size_to_compress"
 /** The maximum amount of memory used by trace events per channel trace node.
  * Once the maximum is reached, subsequent events will evict the oldest events
  * from the buffer. The unit for this knob is bytes. Setting it to zero causes

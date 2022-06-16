@@ -52,7 +52,7 @@ static void assert_passthrough(grpc_slice value,
   int was_compressed;
   const char* algorithm_name;
   gzip_compression_options options{
-    gzip_compression_level: 6,
+    gzip_compression_level : 6,
   };
   GPR_ASSERT(grpc_compression_algorithm_name(algorithm, &algorithm_name) != 0);
   gpr_log(GPR_INFO,
@@ -74,7 +74,8 @@ static void assert_passthrough(grpc_slice value,
 
   {
     grpc_core::ExecCtx exec_ctx;
-    was_compressed = grpc_msg_compress(algorithm, &input, &compressed_raw, options);
+    was_compressed =
+        grpc_msg_compress(algorithm, &input, &compressed_raw, options);
   }
   GPR_ASSERT(input.count > 0);
 
@@ -147,7 +148,7 @@ static void test_tiny_data_compress(void) {
   grpc_slice_buffer input;
   grpc_slice_buffer output;
   gzip_compression_options options{
-    gzip_compression_level: 6,
+    gzip_compression_level : 6,
   };
 
   grpc_slice_buffer_init(&input);
@@ -159,8 +160,7 @@ static void test_tiny_data_compress(void) {
     grpc_core::ExecCtx exec_ctx;
     GPR_ASSERT(0 ==
                grpc_msg_compress(static_cast<grpc_compression_algorithm>(i),
-                                 &input, &output,
-                                 options));
+                                 &input, &output, options));
     GPR_ASSERT(1 == output.count);
   }
 
@@ -177,7 +177,7 @@ static void test_bad_decompression_data_crc(void) {
   int default_gzip_compression_level_ = 6;
   int default_grpc_min_message_size_to_compress_ = 0;
   gzip_compression_options options{
-    gzip_compression_level: 6,
+    gzip_compression_level : 6,
   };
 
   grpc_slice_buffer_init(&input);
@@ -210,7 +210,7 @@ static void test_bad_decompression_data_missing_trailer(void) {
   int default_gzip_compression_level_ = 6;
   int default_grpc_min_message_size_to_compress_ = 0;
   gzip_compression_options options{
-    gzip_compression_level: 6,
+    gzip_compression_level : 6,
   };
 
   grpc_slice_buffer_init(&input);
@@ -276,7 +276,7 @@ static void test_bad_compression_algorithm(void) {
   grpc_slice_buffer output;
   int was_compressed;
   gzip_compression_options options{
-    gzip_compression_level: 6,
+    gzip_compression_level : 6,
   };
 
   grpc_slice_buffer_init(&input);
@@ -291,8 +291,7 @@ static void test_bad_compression_algorithm(void) {
 
   was_compressed = grpc_msg_compress(static_cast<grpc_compression_algorithm>(
                                          GRPC_COMPRESS_ALGORITHMS_COUNT + 123),
-                                     &input, &output,
-                                     options);
+                                     &input, &output, options);
   GPR_ASSERT(0 == was_compressed);
 
   grpc_slice_buffer_destroy(&input);

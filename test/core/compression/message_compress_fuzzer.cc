@@ -30,9 +30,9 @@ bool squelch = true;
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int default_gzip_compression_level_ = 6;
   int default_grpc_min_message_size_to_compress_ = 0;
-  
+
   gzip_compression_options options{
-    gzip_compression_level: 6,
+    gzip_compression_level : 6,
   };
   if (size < 1) return 0;
 
@@ -51,8 +51,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   grpc_slice_buffer output_buffer;
   grpc_slice_buffer_init(&output_buffer);
 
-  grpc_msg_compress(compression_algorithm, 
-                    &input_buffer, &output_buffer,
+  grpc_msg_compress(compression_algorithm, &input_buffer, &output_buffer,
                     options);
 
   grpc_slice_buffer_destroy(&input_buffer);
