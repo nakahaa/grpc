@@ -78,7 +78,7 @@ class ChannelData {
       default_compression_algorithm_ = GRPC_COMPRESS_NONE;
     }
 
-    default_compression_lower_bound_ = grpc_core::DefaultCompressionLowerBoundFromChannelArgs(
+    default_grpc_min_message_size_to_compress_ = grpc_core::DefaultGrpcMinMessageSizeToCompressFromChannelArgs(
       args->channel_args
     );
 
@@ -98,7 +98,7 @@ class ChannelData {
   }
 
   int default_compression_lower_bound() const {
-    return default_compression_lower_bound_;
+    return default_grpc_min_message_size_to_compress_;
   }
 
   grpc_core::CompressionAlgorithmSet enabled_compression_algorithms() const {
@@ -111,7 +111,7 @@ class ChannelData {
   /** Enabled compression algorithms */
   grpc_core::CompressionAlgorithmSet enabled_compression_algorithms_;
   int default_gzip_compression_level_;
-  int default_compression_lower_bound_;
+  int default_grpc_min_message_size_to_compress_;
 };
 
 class CallData {
@@ -192,6 +192,11 @@ bool CallData::SkipMessageCompression() {
   if (flags & (GRPC_WRITE_NO_COMPRESS | GRPC_WRITE_INTERNAL_COMPRESS)) {
     return true;
   }
+  // If the message size is less than the default_grpc_min_message_size_to_compress_, 
+  // skip message compression.
+  if ( slices_->length < default_grpc_min_message_size_to_compress_) {
+    return true;
+  }
   // If this call doesn't have any message compression algorithm set, skip
   // message compression.
   return compression_algorithm_ == GRPC_COMPRESS_NONE;
@@ -256,7 +261,6 @@ void CallData::FinishSendMessage(grpc_call_element* elem) {
       send_message_batch_->payload->send_message.send_message->flags();
   gzip_compression_options options{
     gzip_compression_level: gzip_compression_level_,
-    compression_lower_bound: compression_lower_bound_,
   };
   bool did_compress = grpc_msg_compress(compression_algorithm_, &slices_, &tmp, options);
   if (did_compress) {

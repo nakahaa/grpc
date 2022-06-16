@@ -95,9 +95,6 @@ static void zfree_gpr(void* /*opaque*/, void* address) { gpr_free(address); }
 
 static int zlib_compress(grpc_slice_buffer* input, grpc_slice_buffer* output,
                          int gzip, gzip_compression_options options) {
-  if( input->length < options.compression_lower_bound ) 
-    return 0;
-  
   z_stream zs;
   int r;
   size_t i;

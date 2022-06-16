@@ -26,7 +26,6 @@
 
 struct gzip_compression_options {
    int gzip_compression_level;
-   int compression_lower_bound;
 };
 
 /* compress 'input' to 'output' using 'algorithm'.

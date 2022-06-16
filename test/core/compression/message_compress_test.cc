@@ -53,7 +53,6 @@ static void assert_passthrough(grpc_slice value,
   const char* algorithm_name;
   gzip_compression_options options{
     gzip_compression_level: 6,
-    compression_lower_bound: 0,
   };
   GPR_ASSERT(grpc_compression_algorithm_name(algorithm, &algorithm_name) != 0);
   gpr_log(GPR_INFO,
@@ -149,7 +148,6 @@ static void test_tiny_data_compress(void) {
   grpc_slice_buffer output;
   gzip_compression_options options{
     gzip_compression_level: 6,
-    compression_lower_bound: 0,
   };
 
   grpc_slice_buffer_init(&input);
@@ -177,10 +175,9 @@ static void test_bad_decompression_data_crc(void) {
   size_t idx;
   const uint32_t bad = 0xdeadbeef;
   int default_gzip_compression_level_ = 6;
-  int default_compression_lower_bound_ = 0;
+  int default_grpc_min_message_size_to_compress_ = 0;
   gzip_compression_options options{
     gzip_compression_level: 6,
-    compression_lower_bound: 0,
   };
 
   grpc_slice_buffer_init(&input);
@@ -211,10 +208,9 @@ static void test_bad_decompression_data_missing_trailer(void) {
   grpc_slice_buffer garbage;
   grpc_slice_buffer output;
   int default_gzip_compression_level_ = 6;
-  int default_compression_lower_bound_ = 0;
+  int default_grpc_min_message_size_to_compress_ = 0;
   gzip_compression_options options{
     gzip_compression_level: 6,
-    compression_lower_bound: 0,
   };
 
   grpc_slice_buffer_init(&input);
@@ -281,7 +277,6 @@ static void test_bad_compression_algorithm(void) {
   int was_compressed;
   gzip_compression_options options{
     gzip_compression_level: 6,
-    compression_lower_bound: 0,
   };
 
   grpc_slice_buffer_init(&input);
