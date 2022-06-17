@@ -35,7 +35,8 @@
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/surface/api_trace.h"
 
-#define Z_DEFAULT_COMPRESSION_LOWER_BOUND  (0)
+#define GRPC_MIN_COMPRESSION_MESSAGE_SIZE  (0)
+#define GPRC_DEFAULT_COMPRESS_LEVEL (6)
 
 namespace grpc_core {
 
@@ -254,7 +255,7 @@ int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
   return grpc_channel_args_find_integer(
     args,
     GRPC_GZIP_COMPRESSION_LEVEL,
-    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, 12});
+    {GRPC_MIN_COMPRESSION_MESSAGE_SIZE, 0, 12});
 }
 
 int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(const grpc_channel_args* args) {
