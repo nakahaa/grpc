@@ -262,7 +262,7 @@ int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(const grpc_channel_args* 
   return grpc_channel_args_find_integer(
     args,
     GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS,
-    {Z_DEFAULT_COMPRESSION_LOWER_BOUND, 0, INT_MAX});
+    {GRPC_MIN_COMPRESSION_MESSAGE_SIZE, 0, INT_MAX});
 }
 
 }  // namespace grpc_core
