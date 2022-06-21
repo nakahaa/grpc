@@ -46,8 +46,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   grpc_slice_buffer output_buffer;
   grpc_slice_buffer_init(&output_buffer);
 
-  grpc_msg_compress(compression_algorithm, 
-                    &input_buffer, &output_buffer,
+  grpc_msg_compress(compression_algorithm, &input_buffer, &output_buffer,
                     std::make_unique<grpc_core::CompressionOptions>(options));
 
   grpc_slice_buffer_destroy(&input_buffer);
