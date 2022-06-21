@@ -20,10 +20,9 @@
 
 #include "src/core/lib/compression/compression_internal.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
-#include <cstdint>
 
 #include "absl/container/inlined_vector.h"
 #include "absl/strings/ascii.h"
@@ -35,7 +34,7 @@
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/surface/api_trace.h"
 
-#define GRPC_MIN_COMPRESSION_MESSAGE_SIZE  (0)
+#define GRPC_MIN_COMPRESSION_MESSAGE_SIZE (0)
 #define GPRC_DEFAULT_COMPRESS_LEVEL (6)
 
 namespace grpc_core {
@@ -253,16 +252,15 @@ DefaultCompressionAlgorithmFromChannelArgs(const grpc_channel_args* args) {
 
 int DefaultGzipCompressionLevelFromChannelArgs(const grpc_channel_args* args) {
   return grpc_channel_args_find_integer(
-    args,
-    GRPC_GZIP_COMPRESSION_LEVEL,
-    {GRPC_MIN_COMPRESSION_MESSAGE_SIZE, 0, 12});
+      args, GRPC_GZIP_COMPRESSION_LEVEL,
+      {GRPC_MIN_COMPRESSION_MESSAGE_SIZE, 0, 12});
 }
 
-int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(const grpc_channel_args* args) {
+int DefaultGrpcMinMessageSizeToCompressFromChannelArgs(
+    const grpc_channel_args* args) {
   return grpc_channel_args_find_integer(
-    args,
-    GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS,
-    {GRPC_MIN_COMPRESSION_MESSAGE_SIZE, 0, INT_MAX});
+      args, GRPC_MIN_MESSAGE_SIZE_TO_COMPRESS,
+      {GRPC_MIN_COMPRESSION_MESSAGE_SIZE, 0, INT_MAX});
 }
 
 }  // namespace grpc_core
