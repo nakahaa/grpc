@@ -51,7 +51,7 @@ static void assert_passthrough(grpc_slice value,
   grpc_slice final;
   int was_compressed;
   const char* algorithm_name;
-  std::unique_ptr<CompressionOptions> options =
+  std::unique_ptr<grpc_core::CompressionOptions> options =
       grpc_core::MakeCompressionOptions(nullptr);
   GPR_ASSERT(grpc_compression_algorithm_name(algorithm, &algorithm_name) != 0);
   gpr_log(GPR_INFO,
@@ -146,7 +146,7 @@ static grpc_slice create_test_value(test_value id) {
 static void test_tiny_data_compress(void) {
   grpc_slice_buffer input;
   grpc_slice_buffer output;
-  std::unique_ptr<CompressionOptions> options =
+  std::unique_ptr<grpc_core::CompressionOptions> options =
       grpc_core::MakeCompressionOptions(nullptr);
 
   grpc_slice_buffer_init(&input);
@@ -172,7 +172,7 @@ static void test_bad_decompression_data_crc(void) {
   grpc_slice_buffer output;
   size_t idx;
   const uint32_t bad = 0xdeadbeef;
-  std::unique_ptr<CompressionOptions> options =
+  std::unique_ptr<grpc_core::CompressionOptions> options =
       grpc_core::MakeCompressionOptions(nullptr);
 
   grpc_slice_buffer_init(&input);
@@ -202,7 +202,7 @@ static void test_bad_decompression_data_missing_trailer(void) {
   grpc_slice_buffer decompressed;
   grpc_slice_buffer garbage;
   grpc_slice_buffer output;
-  std::unique_ptr<CompressionOptions> options =
+  std::unique_ptr<grpc_core::CompressionOptions> options =
       grpc_core::MakeCompressionOptions(nullptr);
 
   grpc_slice_buffer_init(&input);
@@ -267,7 +267,7 @@ static void test_bad_compression_algorithm(void) {
   grpc_slice_buffer input;
   grpc_slice_buffer output;
   int was_compressed;
-  std::unique_ptr<CompressionOptions> options =
+  std::unique_ptr<grpc_core::CompressionOptions> options =
       grpc_core::MakeCompressionOptions(nullptr);
 
   grpc_slice_buffer_init(&input);
