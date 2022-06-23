@@ -20,10 +20,9 @@
 
 #include "src/core/lib/compression/compression_internal.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <cstdint>
 
 #include <zlib.h>
 
